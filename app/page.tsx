@@ -27,6 +27,10 @@ export default function Page() {
 				<UploadCloudIcon /> 3. 파일시스템 API - 전체 계층형 업로드 <CheckCheck color="green" />
 			</Button></Link>
 
+			<Link href="/pdf-highlight"><Button className="w-full w-max-lg" variant="outline">
+				<UploadCloudIcon /> 4. pdf 필터링 기반 하이라이팅
+			</Button></Link>
+
 			</div>
 		</div>
 		</>
