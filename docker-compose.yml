@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:17.2
+    container_name: pdffer
+    restart: always
+    ports:
+      - '5411:5432' # HOST:CONTAINER
+    environment:
+      POSTGRES_USER: pdffer
+      POSTGRES_PASSWORD: pdffer
+      POSTGRES_DB: pdffer
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

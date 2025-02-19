@@ -1,8 +1,17 @@
 {
   "$schema": "https://biomejs.dev/schemas/1.9.0/schema.json",
-  "formatter": { "enabled": true, "formatWithErrors": false, "indentStyle": "space", "indentWidth": 2, "lineEnding": "lf", "lineWidth": 200, "attributePosition": "auto" },
+  "formatter": {
+    "enabled": true,
+    "formatWithErrors": false,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineEnding": "lf",
+    "lineWidth": 200,
+    "attributePosition": "auto"
+  },
+  "javascript": { "formatter": { "bracketSameLine": true } },
   "organizeImports": { "enabled": true },
   "linter": { "enabled": true, "rules": { "recommended": true, "a11y": { "useKeyWithClickEvents": "off", "useKeyWithMouseEvents": "off" } } },
   "vcs": { "enabled": true, "clientKind": "git" },
-  "files": { "ignore": ["package.json"] }
+  "files": { "ignore": ["package.json", "node_modules/**/*", ".next/**/*"] }
 }
