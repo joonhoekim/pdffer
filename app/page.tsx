@@ -51,6 +51,10 @@ export default function Page() {
             </Button>
           </Link>
 
+          <Button className="w-full w-max-lg" variant="outline">
+            test
+          </Button>
+
           <Link href="/pdf-highlight">
             <Button className="w-full w-max-lg" variant="outline">
               <UploadCloudIcon /> 7. pdf 필터링 기반 하이라이팅

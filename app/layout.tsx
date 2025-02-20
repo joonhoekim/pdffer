@@ -25,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ClientProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <div className="fixed top-4 right-4 z-50">

@@ -28,7 +28,7 @@ export default function PdfTestbed() {
         pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdfjs/pdf.worker.min.mjs";
 
         // PDF 로드
-        const loadingTask = pdfjsLib.getDocument("/pdf-example/test.pdf");
+        const loadingTask = pdfjsLib.getDocument("/pdf-example/test-big.pdf");
         const pdfDocument = await loadingTask.promise;
         setPdfDoc(pdfDocument);
         setNumPages(pdfDocument.numPages);
