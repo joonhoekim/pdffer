@@ -17,6 +17,10 @@ interface PageData {
   pageNumber: number;
   page: PDFPageProxy;
   isRendering: boolean;
+  viewport: {
+    width: number;
+    height: number;
+  };
 }
 
 export default function PdfViewer() {
@@ -105,10 +109,7 @@ export default function PdfViewer() {
       }
 
       try {
-        // 이전 렌더링 작업 취소
         cancelRenderTask(pageNum);
-
-        // 페이지 렌더링 상태 업데이트
         setPages((prevPages) => prevPages.map((p) => (p.pageNumber === pageNum ? { ...p, isRendering: true } : p)));
 
         const viewport = pageData.page.getViewport({ scale: pageScale });
@@ -130,7 +131,20 @@ export default function PdfViewer() {
         if (mountedRef.current) {
           renderTasksRef.current.delete(pageNum);
           setRenderedPages((prev) => new Set(prev).add(pageNum));
-          setPages((prevPages) => prevPages.map((p) => (p.pageNumber === pageNum ? { ...p, isRendering: false } : p)));
+          setPages((prevPages) =>
+            prevPages.map((p) =>
+              p.pageNumber === pageNum
+                ? {
+                    ...p,
+                    isRendering: false,
+                    viewport: {
+                      width: viewport.width,
+                      height: viewport.height,
+                    },
+                  }
+                : p,
+            ),
+          );
         }
       } catch (error: unknown) {
         if (!mountedRef.current) return;
@@ -189,11 +203,16 @@ export default function PdfViewer() {
 
         console.log(`페이지 ${pageNum} 로드 시작`);
         const page = await pdfDocument.getPage(pageNum);
+        const viewport = page.getViewport({ scale });
         console.log(`페이지 ${pageNum} 로드 완료`);
         return {
           pageNumber: pageNum,
           page,
           isRendering: false,
+          viewport: {
+            width: viewport.width,
+            height: viewport.height,
+          },
         };
       });
 
@@ -219,7 +238,7 @@ export default function PdfViewer() {
         setLoading(false);
       }
     }
-  }, []);
+  }, [scale]);
 
   // Intersection Observer로 페이지 렌더링 관찰
   useEffect(() => {
@@ -270,9 +289,25 @@ export default function PdfViewer() {
 
       const boundedScale = Math.max(Math.min(newScale, 5), 0.6);
       cancelAllRenderTasks();
+
+      // 모든 페이지의 viewport 크기 업데이트
+      setPages((prevPages) =>
+        prevPages.map((pageData) => {
+          const viewport = pageData.page.getViewport({ scale: boundedScale });
+          return {
+            ...pageData,
+            viewport: {
+              width: viewport.width,
+              height: viewport.height,
+            },
+          };
+        }),
+      );
+
       setScale(boundedScale);
       setRenderedPages(new Set());
 
+      // 현재 보이는 페이지만 다시 렌더링
       for (const [pageNum, canvas] of pageCanvasesRef.current.entries()) {
         const pageData = pages.find((p) => p.pageNumber === pageNum);
         if (pageData) {
@@ -372,9 +407,16 @@ export default function PdfViewer() {
         <span className="ml-2 text-sm text-gray-600">{Math.round(scale * 100)}%</span>
       </div>
       <div ref={containerRef} className="pages-container flex flex-col items-center gap-4 py-4" style={{ touchAction: "pan-x pan-y" }}>
-        {pages.map(({ pageNumber }) => (
-          <div key={`page-${pageNumber}`} className="page-container bg-white shadow-md" data-page={pageNumber}>
-            <canvas className="max-w-full" />
+        {pages.map(({ pageNumber, viewport }) => (
+          <div
+            key={`page-${pageNumber}`}
+            className="page-container bg-white shadow-md relative"
+            data-page={pageNumber}
+            style={{
+              width: viewport.width,
+              height: viewport.height,
+            }}>
+            <canvas className="max-w-full absolute top-0 left-0" />
           </div>
         ))}
       </div>
