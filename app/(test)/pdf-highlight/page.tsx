@@ -1,155 +1,148 @@
 "use client";
 
-import * as ph from "react-pdf-highlighter";
-import { useState, useEffect, useRef } from "react";
-import type { IHighlight } from "react-pdf-highlighter";
-import { useRouter } from "next/navigation";
+import { LoadingSpinner } from "@/components/custom-ui/loading-spinner";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { AreaHighlight, Highlight, PdfHighlighter, PdfLoader, Popup, Tip } from "react-pdf-highlighter";
+import type { Content, IHighlight, NewHighlight, ScaledPosition } from "react-pdf-highlighter";
+import { Sidebar } from "./Sidebar";
+import "react-pdf-highlighter/dist/style.css";
 
-interface FileNode {
-  name: string;
-  type: "file" | "directory";
-  children?: FileNode[];
-  path: string;
-}
+const getNextId = () => String(Math.random()).slice(2);
 
-interface Props {
-  params: {
-    id?: string;
+const parseIdFromHash = () => document.location.hash.slice("#highlight-".length);
+
+const resetHash = () => {
+  document.location.hash = "";
+};
+
+const HighlightPopup = ({
+  comment,
+}: {
+  comment: { text: string; emoji: string };
+}) =>
+  comment.text ? (
+    <div className="Highlight__popup">
+      {comment.emoji} {comment.text}
+    </div>
+  ) : null;
+
+// const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021";
+const PRIMARY_PDF_URL = "/pdf-example/test.pdf";
+const SECONDARY_PDF_URL = "https://arxiv.org/pdf/1604.02480";
+
+export default function Page() {
+  const searchParams = new URLSearchParams(document.location.search);
+  const initialUrl = searchParams.get("url") || PRIMARY_PDF_URL;
+
+  const [url, setUrl] = useState(initialUrl);
+  const [highlights, setHighlights] = useState<Array<IHighlight>>([]);
+
+  const resetHighlights = () => {
+    setHighlights([]);
   };
-}
 
-export default function Page({ params }: Props) {
-  const router = useRouter();
-  const { id } = params;
-  const [pdfPath, setPdfPath] = useState<string>("");
-  const [highlights, setHighlights] = useState<IHighlight[]>([]);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [fileTree, setFileTree] = useState<FileNode[]>([]);
-  const [loading, setLoading] = useState(true);
+  const toggleDocument = () => {
+    const newUrl = url === PRIMARY_PDF_URL ? SECONDARY_PDF_URL : PRIMARY_PDF_URL;
+    setUrl(newUrl);
+    setHighlights([]);
+  };
+
+  const scrollViewerTo = useRef((highlight: IHighlight) => {});
+
+  const scrollToHighlightFromHash = useCallback(() => {
+    const highlight = getHighlightById(parseIdFromHash());
+    if (highlight) {
+      scrollViewerTo.current(highlight);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchFileTree = async () => {
-      try {
-        const response = await fetch("/api/storage/list");
-        const data = await response.json();
-        setFileTree(data);
-      } catch (error) {
-        console.error("파일 트리를 가져오는데 실패했습니다:", error);
-      } finally {
-        setLoading(false);
-      }
+    window.addEventListener("hashchange", scrollToHighlightFromHash, false);
+    return () => {
+      window.removeEventListener("hashchange", scrollToHighlightFromHash, false);
     };
+  }, [scrollToHighlightFromHash]);
 
-    if (!id) {
-      fetchFileTree();
-    }
-  }, [id]);
-
-  useEffect(() => {
-    const fetchPdfPath = async () => {
-      try {
-        const response = await fetch(`/api/pdf-path/${encodeURIComponent(id)}`);
-        const data = await response.json();
-        setPdfPath(data.path);
-      } catch (error) {
-        console.error("PDF 경로를 가져오는데 실패했습니다:", error);
-      }
-    };
-
-    if (id) {
-      fetchPdfPath();
-    }
-  }, [id]);
-
-  const handleFileSelect = (node: FileNode) => {
-    if (node.type === "file" && node.path.toLowerCase().endsWith(".pdf")) {
-      router.push(`/pdf-highlight/${encodeURIComponent(node.path)}`);
-    }
+  const getHighlightById = (id: string) => {
+    return highlights.find((highlight) => highlight.id === id);
   };
 
-  const renderTree = (nodes: FileNode[]) => {
-    return (
-      <ul className="space-y-2">
-        {nodes.map((node, index) => (
-          <li key={index} className="pl-4">
-            <div
-              className={`flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded ${node.type === "file" ? "text-blue-600" : "font-semibold"}`}
-              onClick={() => handleFileSelect(node)}>
-              <span>{node.type === "file" ? "📄" : "📁"}</span>
-              <span>{node.name}</span>
-            </div>
-            {node.type === "directory" && node.children && <div className="ml-4">{renderTree(node.children)}</div>}
-          </li>
-        ))}
-      </ul>
-    );
+  const addHighlight = (highlight: NewHighlight) => {
+    console.log("Saving highlight", highlight);
+    setHighlights((prevHighlights) => [{ ...highlight, id: getNextId() }, ...prevHighlights]);
   };
 
-  if (loading) {
-    return <div>파일 목록을 불러오는 중...</div>;
-  }
-
-  if (!id) {
-    return (
-      <div className="p-4">
-        <h1 className="text-2xl font-bold mb-4">PDF 문서 목록</h1>
-        {renderTree(fileTree)}
-      </div>
+  const updateHighlight = (highlightId: string, position: Partial<ScaledPosition>, content: Partial<Content>) => {
+    console.log("Updating highlight", highlightId, position, content);
+    setHighlights((prevHighlights) =>
+      prevHighlights.map((h) => {
+        const { id, position: originalPosition, content: originalContent, ...rest } = h;
+        return id === highlightId
+          ? {
+              id,
+              position: { ...originalPosition, ...position },
+              content: { ...originalContent, ...content },
+              ...rest,
+            }
+          : h;
+      }),
     );
-  }
-
-  if (!pdfPath) {
-    return <div>PDF 문서를 불러오는 중...</div>;
-  }
+  };
 
   return (
-    <div className="pdf-container">
-      <div className="flex items-center space-x-4 mb-4">
-        <button onClick={() => router.push("/pdf-highlight")} className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded">
-          ← 목록으로
-        </button>
-        <h1 className="text-2xl font-bold">PDF 문서 - {decodeURIComponent(id)}</h1>
-      </div>
-      <ph.PdfLoader url={`/api/pdf-file?path=${encodeURIComponent(pdfPath)}`} beforeLoad={<div>PDF 문서를 불러오는 중...</div>}>
-        {(pdfDocument) => (
-          <ph.PdfHighlighter
-            pdfDocument={pdfDocument}
-            enableAreaSelection={() => true}
-            highlights={highlights}
-            onScrollChange={() => {}}
-            scrollRef={(scrollTo) => {
-              scrollRef.current = scrollTo as unknown as HTMLDivElement;
-            }}
-            onSelectionFinished={(position, content) => {
-              const highlight: IHighlight = {
-                id: `highlight-${Date.now()}`,
-                content,
-                position,
-                comment: null,
-              };
-              setHighlights([...highlights, highlight]);
-            }}
-            highlightTransform={(highlight, index, setTip, hideTip) => {
-              return (
-                <ph.Highlight
-                  key={index}
-                  position={highlight.position}
-                  comment={highlight.comment || ""}
-                  onClick={() => {
-                    setTip(highlight, () => (
-                      <div>
-                        <div>{highlight.content.text}</div>
-                      </div>
-                    ));
+    <div className="App" style={{ display: "flex", height: "100vh" }}>
+      <Sidebar highlights={highlights} resetHighlights={resetHighlights} toggleDocument={toggleDocument} />
+      <div
+        style={{
+          height: "100vh",
+          width: "75vw",
+          position: "relative",
+        }}>
+        <PdfLoader url={url} beforeLoad={<LoadingSpinner />}>
+          {(pdfDocument) => (
+            <PdfHighlighter
+              pdfDocument={pdfDocument}
+              enableAreaSelection={(event) => event.altKey}
+              onScrollChange={resetHash}
+              scrollRef={(scrollTo) => {
+                scrollViewerTo.current = scrollTo;
+                scrollToHighlightFromHash();
+              }}
+              onSelectionFinished={(position, content, hideTipAndSelection, transformSelection) => (
+                <Tip
+                  onOpen={transformSelection}
+                  onConfirm={(comment) => {
+                    addHighlight({ content, position, comment });
+                    hideTipAndSelection();
                   }}
-                  onMouseOut={hideTip}
-                  isScrolledTo={false}
                 />
-              );
-            }}
-          />
-        )}
-      </ph.PdfLoader>
+              )}
+              highlightTransform={(highlight, index, setTip, hideTip, viewportToScaled, screenshot, isScrolledTo) => {
+                const isTextHighlight = !highlight.content?.image;
+
+                const component = isTextHighlight ? (
+                  <Highlight isScrolledTo={isScrolledTo} position={highlight.position} comment={highlight.comment} />
+                ) : (
+                  <AreaHighlight
+                    isScrolledTo={isScrolledTo}
+                    highlight={highlight}
+                    onChange={(boundingRect) => {
+                      updateHighlight(highlight.id, { boundingRect: viewportToScaled(boundingRect) }, { image: screenshot(boundingRect) });
+                    }}
+                  />
+                );
+
+                return (
+                  <Popup popupContent={<HighlightPopup {...highlight} />} onMouseOver={(popupContent) => setTip(highlight, (highlight) => popupContent)} onMouseOut={hideTip} key={index}>
+                    {component}
+                  </Popup>
+                );
+              }}
+              highlights={highlights}
+            />
+          )}
+        </PdfLoader>
+      </div>
     </div>
   );
 }

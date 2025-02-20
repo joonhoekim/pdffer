@@ -33,15 +33,27 @@ export default function Page() {
             </Button>
           </Link>
 
-          <Link href="/filesystem-api-upload">
+          <Link href="/filesystem-api-upload-db">
             <Button className="w-full w-max-lg" variant="outline">
               <UploadCloudIcon /> 4. 파일업로드 리팩터링: 파일시스템 + 메타데이터 DB <CheckCheck color="green" />
             </Button>
           </Link>
 
+          <Link href="/pdf-testbed">
+            <Button className="w-full w-max-lg" variant="outline">
+              <UploadCloudIcon /> 5. pdf.js viewer (per page)
+            </Button>
+          </Link>
+
+          <Link href="/pdfjs-scroll">
+            <Button className="w-full w-max-lg" variant="outline">
+              <UploadCloudIcon /> 6. pdf.js viewer (scroll)
+            </Button>
+          </Link>
+
           <Link href="/pdf-highlight">
             <Button className="w-full w-max-lg" variant="outline">
-              <UploadCloudIcon /> 5. pdf 필터링 기반 하이라이팅
+              <UploadCloudIcon /> 7. pdf 필터링 기반 하이라이팅
             </Button>
           </Link>
         </div>
