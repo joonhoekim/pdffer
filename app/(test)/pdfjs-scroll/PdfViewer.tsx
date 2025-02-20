@@ -362,7 +362,7 @@ export default function PdfViewer() {
 
   return (
     <div className="pdf-scroll-container">
-      <div className="controls fixed top-14 right-4 p-2 rounded shadow-md z-10">
+      <div className="controls fixed top-14 right-4 p-2 rounded shadow-md z-10 bg-white">
         <Button type="button" onClick={handleZoomOut} className="px-3 py-1">
           축소
         </Button>
