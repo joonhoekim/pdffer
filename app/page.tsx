@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { CheckCheck, FolderCode, SearchCheckIcon, Upload, UploadCloudIcon } from "lucide-react";
+import { CheckCheck, FolderTree, Files, FileUp, FileText, ScrollText, Highlighter, Search } from "lucide-react";
 import Link from "next/link";
 
 export default function Page() {
@@ -11,53 +11,49 @@ export default function Page() {
         <Separator className="w-full my-4" />
         <div className="flex flex-row gap-2 items-center">
           <p className="text-sm text-muted-foreground">PoC 목록</p>
-          <SearchCheckIcon />
+          <Search />
         </div>
 
         <div className="flex flex-col gap-4">
           <Link href="/filesystem-api">
             <Button className="w-full w-max-lg" variant="outline">
-              <FolderCode /> 1. 폴더기준 계층형 파일 업로드 <CheckCheck color="green" />
+              <FolderTree /> 1. 폴더기준 계층형 파일 업로드 <CheckCheck color="green" />
             </Button>
           </Link>
 
           <Link href="/upload-multiple-files">
             <Button className="w-full w-max-lg" variant="outline">
-              <Upload /> 2. 여러 파일 한번에 업로드 <CheckCheck color="green" />
+              <Files /> 2. 여러 파일 한번에 업로드 <CheckCheck color="green" />
             </Button>
           </Link>
 
           <Link href="/filesystem-api-upload">
             <Button className="w-full w-max-lg" variant="outline">
-              <UploadCloudIcon /> 3. 파일시스템 API - 전체 계층형 업로드 <CheckCheck color="green" />
+              <FileUp /> 3. 파일시스템 API - 전체 계층형 업로드 <CheckCheck color="green" />
             </Button>
           </Link>
 
           <Link href="/filesystem-api-upload-db">
             <Button className="w-full w-max-lg" variant="outline">
-              <UploadCloudIcon /> 4. 파일업로드 리팩터링: 파일시스템 + 메타데이터 DB <CheckCheck color="green" />
+              <FileText /> 4. 파일업로드 리팩터링: 파일시스템 + 메타데이터 DB <CheckCheck color="green" />
             </Button>
           </Link>
 
           <Link href="/pdf-testbed">
             <Button className="w-full w-max-lg" variant="outline">
-              <UploadCloudIcon /> 5. pdf.js viewer (per page)
+              <FileText /> 5. pdf.js viewer (per page) <CheckCheck color="green" />
             </Button>
           </Link>
 
           <Link href="/pdfjs-scroll">
             <Button className="w-full w-max-lg" variant="outline">
-              <UploadCloudIcon /> 6. pdf.js viewer (scroll)
+              <ScrollText /> 6. pdf.js viewer (scroll) <CheckCheck color="green" />
             </Button>
           </Link>
 
-          <Button className="w-full w-max-lg" variant="outline">
-            test
-          </Button>
-
           <Link href="/pdf-highlight">
             <Button className="w-full w-max-lg" variant="outline">
-              <UploadCloudIcon /> 7. pdf 필터링 기반 하이라이팅
+              <Highlighter /> 7. pdf 필터링 기반 하이라이팅
             </Button>
           </Link>
         </div>
