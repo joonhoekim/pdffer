@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { CheckCheck, FolderTree, Files, FileUp, FileText, ScrollText, Highlighter, Search } from "lucide-react";
+import { CheckCheck, FolderTree, Files, FileUp, FileText, ScrollText, Highlighter, Search, View } from "lucide-react";
 import Link from "next/link";
 
 export default function Page() {
@@ -48,6 +48,12 @@ export default function Page() {
           <Link href="/pdfjs-scroll">
             <Button className="w-full w-max-lg" variant="outline">
               <ScrollText /> 6. pdf.js viewer (scroll) <CheckCheck color="green" />
+            </Button>
+          </Link>
+
+          <Link href="/pdfjs-refactor">
+            <Button className="w-full w-max-lg" variant="outline">
+              <View /> 6. pdf.js scroll viewer refactored <CheckCheck color="green" />
             </Button>
           </Link>
 
