@@ -17,7 +17,7 @@ export default function Layout({
 }) {
   return (
     <>
-      <div className="flex flex-col gap-2 justify-center items-center m-8 p-4">
+      <div className="flex flex-col gap-2 justify-center items-center m-2 p-2">
         <Link href="/">
           <Home />
         </Link>

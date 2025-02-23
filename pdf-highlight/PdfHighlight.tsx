@@ -37,11 +37,16 @@ const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021";
 const SECONDARY_PDF_URL = "https://arxiv.org/pdf/1604.02480";
 
 export default function PdfHighlight() {
-  const searchParams = new URLSearchParams(document.location.search);
-  const initialUrl = searchParams.get("url") || PRIMARY_PDF_URL;
+  const [url, setUrl] = useState(PRIMARY_PDF_URL);
+  const [highlights, setHighlights] = useState<Array<IHighlight>>([]);
 
-  const [url, setUrl] = useState(initialUrl);
-  const [highlights, setHighlights] = useState<Array<IHighlight>>(testHighlights[initialUrl] ? [...testHighlights[initialUrl]] : []);
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const initialUrl = searchParams.get("url") || PRIMARY_PDF_URL;
+
+    setUrl(initialUrl);
+    setHighlights(testHighlights[initialUrl] ? [...testHighlights[initialUrl]] : []);
+  }, []);
 
   const resetHighlights = () => {
     setHighlights([]);
