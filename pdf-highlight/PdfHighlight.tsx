@@ -8,9 +8,9 @@ import type { Content, IHighlight, NewHighlight, ScaledPosition } from "./index"
 import { Sidebar } from "./Sidebar";
 import { Spinner } from "./Spinner";
 import { testHighlights as _testHighlights } from "./test-highlights";
+import "react-pdf-highlighter/dist/style.css";
 
 import "./style/App.css";
-// import "./style/style.css";
 
 const testHighlights: Record<string, Array<IHighlight>> = _testHighlights;
 

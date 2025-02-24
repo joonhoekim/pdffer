@@ -26,8 +26,8 @@ const HighlightPopup = ({
     </div>
   ) : null;
 
-// const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021";
-const PRIMARY_PDF_URL = "/pdf-example/test.pdf";
+const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021";
+// const PRIMARY_PDF_URL = "/pdf-example/test.pdf";
 const SECONDARY_PDF_URL = "https://arxiv.org/pdf/1604.02480";
 
 export default function PdfHighlighterWrapper() {

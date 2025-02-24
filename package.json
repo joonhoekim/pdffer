@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "PORT=2999 next dev",
     "build": "next build",
     "build:dev": "BUILD_MODE=dev next build",
     "start": "next start",
