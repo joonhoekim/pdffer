@@ -4,8 +4,11 @@ import { LoadingSpinner } from "@/components/custom-ui/loading-spinner";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { AreaHighlight, Highlight, PdfHighlighter as PdfHighlighterComponent, PdfLoader, Popup, Tip } from "react-pdf-highlighter";
 import type { Content, IHighlight, NewHighlight, ScaledPosition } from "react-pdf-highlighter";
+import type { TextItem } from "pdfjs-dist/types/src/display/api";
 import { Sidebar } from "./Sidebar";
 import "react-pdf-highlighter/dist/style.css";
+import { FilterControls } from "./FilterControls";
+import type { FilterGroup, TextFilter } from "./types";
 
 const getNextId = () => String(Math.random()).slice(2);
 
@@ -36,6 +39,11 @@ export default function PdfHighlighterWrapper() {
 
   const [url, setUrl] = useState(initialUrl);
   const [highlights, setHighlights] = useState<Array<IHighlight>>([]);
+  const [filterGroup, setFilterGroup] = useState<FilterGroup>({
+    filters: [],
+    condition: "AND",
+  });
+  const [pdfJsDocument, setPdfJsDocument] = useState<any>(null);
 
   const resetHighlights = () => {
     setHighlights([]);
@@ -89,58 +97,133 @@ export default function PdfHighlighterWrapper() {
     );
   };
 
+  const testFilter = (text: string, filter: TextFilter): boolean => {
+    if (!filter.pattern) return false;
+
+    if (filter.isRegex) {
+      try {
+        const regex = new RegExp(filter.pattern, "i");
+        return regex.test(text);
+      } catch {
+        return false;
+      }
+    }
+    return text.toLowerCase().includes(filter.pattern.toLowerCase());
+  };
+
+  const shouldHighlight = (text: string): boolean => {
+    if (filterGroup.filters.length === 0) return false;
+
+    return filterGroup.condition === "AND" ? filterGroup.filters.every((filter) => testFilter(text, filter)) : filterGroup.filters.some((filter) => testFilter(text, filter));
+  };
+
+  const searchAndHighlight = async () => {
+    if (!pdfJsDocument) return;
+
+    // Clear existing highlights
+    setHighlights([]);
+
+    const numPages = pdfJsDocument.numPages;
+    const newHighlights: NewHighlight[] = [];
+
+    for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+      const page = await pdfJsDocument.getPage(pageNum);
+      const textContent = await page.getTextContent();
+      const viewport = page.getViewport({ scale: 1 });
+
+      textContent.items.forEach((item: TextItem) => {
+        if (shouldHighlight(item.str)) {
+          const transform = item.transform;
+          // PDF coordinates start from bottom-left, convert to top-left
+          const y = viewport.height - (transform[5] + item.height);
+
+          newHighlights.push({
+            content: { text: item.str },
+            position: {
+              boundingRect: {
+                x1: transform[4],
+                y1: y,
+                x2: transform[4] + item.width,
+                y2: y + item.height,
+                width: item.width,
+                height: item.height,
+                pageNumber: pageNum,
+              },
+              rects: [],
+              pageNumber: pageNum,
+            },
+            comment: { text: "", emoji: "" },
+          });
+        }
+      });
+    }
+
+    // Add all highlights at once
+    setHighlights(newHighlights.map((h) => ({ ...h, id: getNextId() })));
+  };
+
+  // Update highlights when filters change
+  useEffect(() => {
+    searchAndHighlight();
+  }, [filterGroup]);
+
   return (
     <div className="App" style={{ display: "flex", height: "100vh" }}>
-      <Sidebar highlights={highlights} resetHighlights={resetHighlights} toggleDocument={toggleDocument} />
-      <div
-        style={{
-          height: "100vh",
-          width: "75vw",
-          position: "relative",
-        }}>
+      <div className="flex flex-col" style={{ width: "25vw" }}>
+        <div className="p-4">
+          <FilterControls filterGroup={filterGroup} onFilterChange={setFilterGroup} />
+        </div>
+        <Sidebar highlights={highlights} resetHighlights={resetHighlights} toggleDocument={toggleDocument} />
+      </div>
+      <div style={{ height: "100vh", width: "75vw", position: "relative" }}>
         <PdfLoader url={url} beforeLoad={<LoadingSpinner />}>
-          {(pdfDocument) => (
-            <PdfHighlighterComponent
-              pdfDocument={pdfDocument}
-              enableAreaSelection={(event) => event.altKey}
-              onScrollChange={resetHash}
-              scrollRef={(scrollTo) => {
-                scrollViewerTo.current = scrollTo;
-                scrollToHighlightFromHash();
-              }}
-              onSelectionFinished={(position, content, hideTipAndSelection, transformSelection) => (
-                <Tip
-                  onOpen={transformSelection}
-                  onConfirm={(comment) => {
-                    addHighlight({ content, position, comment });
-                    hideTipAndSelection();
-                  }}
-                />
-              )}
-              highlightTransform={(highlight, index, setTip, hideTip, viewportToScaled, screenshot, isScrolledTo) => {
-                const isTextHighlight = !highlight.content?.image;
+          {(pdfDocument) => {
+            // Store pdf.js document for searching
+            setPdfJsDocument(pdfDocument);
 
-                const component = isTextHighlight ? (
-                  <Highlight isScrolledTo={isScrolledTo} position={highlight.position} comment={highlight.comment} />
-                ) : (
-                  <AreaHighlight
-                    isScrolledTo={isScrolledTo}
-                    highlight={highlight}
-                    onChange={(boundingRect) => {
-                      updateHighlight(highlight.id, { boundingRect: viewportToScaled(boundingRect) }, { image: screenshot(boundingRect) });
+            return (
+              <PdfHighlighterComponent
+                pdfDocument={pdfDocument}
+                enableAreaSelection={(event) => event.altKey}
+                onScrollChange={resetHash}
+                scrollRef={(scrollTo) => {
+                  scrollViewerTo.current = scrollTo;
+                  scrollToHighlightFromHash();
+                }}
+                onSelectionFinished={(position, content, hideTipAndSelection, transformSelection) => (
+                  <Tip
+                    onOpen={transformSelection}
+                    onConfirm={(comment) => {
+                      addHighlight({ content, position, comment });
+                      hideTipAndSelection();
                     }}
                   />
-                );
+                )}
+                highlightTransform={(highlight, index, setTip, hideTip, viewportToScaled, screenshot, isScrolledTo) => {
+                  const isTextHighlight = !highlight.content?.image;
 
-                return (
-                  <Popup popupContent={<HighlightPopup {...highlight} />} onMouseOver={(popupContent) => setTip(highlight, (highlight) => popupContent)} onMouseOut={hideTip} key={index}>
-                    {component}
-                  </Popup>
-                );
-              }}
-              highlights={highlights}
-            />
-          )}
+                  const component = isTextHighlight ? (
+                    <Highlight isScrolledTo={isScrolledTo} position={highlight.position} comment={highlight.comment} />
+                  ) : (
+                    <AreaHighlight
+                      isScrolledTo={isScrolledTo}
+                      highlight={highlight}
+                      onChange={(boundingRect) => {
+                        updateHighlight(highlight.id, { boundingRect: viewportToScaled(boundingRect) }, { image: screenshot(boundingRect) });
+                      }}
+                    />
+                  );
+
+                  return (
+                    <Popup popupContent={<HighlightPopup {...highlight} />} onMouseOver={(popupContent) => setTip(highlight, (highlight) => popupContent)} onMouseOut={hideTip} key={index}>
+                      {component}
+                    </Popup>
+                  );
+                }}
+                highlights={highlights}
+              />
+            );
+          }}
         </PdfLoader>
       </div>
     </div>
