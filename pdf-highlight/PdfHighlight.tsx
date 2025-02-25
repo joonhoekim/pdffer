@@ -13,7 +13,7 @@ import { testHighlights as _testHighlights } from "./test-highlights";
 // import "react-pdf-highlighter/dist/style.css";
 
 import "./style/App.css";
-import "./style/style.css";
+// import "./style/style.css";
 
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll-area";
