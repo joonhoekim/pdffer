@@ -51,14 +51,29 @@ a {
   color: #d35400;
 }
 
+/* PDF Highlight specific styles */
+.Highlight__popup {
+  background-color: #3d464d;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 3px;
+  max-width: 300px;
+  max-height: 100px;
+  overflow-y: scroll;
+}
+
+/* Quote styles */
 blockquote {
   padding: 0;
   margin: 0;
   quotes: "\201c" "\201d";
 }
+
 blockquote:before {
   content: open-quote;
 }
+
 blockquote:after {
   content: close-quote;
 }

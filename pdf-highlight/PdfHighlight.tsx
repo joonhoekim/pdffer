@@ -15,6 +15,12 @@ import { testHighlights as _testHighlights } from "./test-highlights";
 import "./style/App.css";
 import "./style/style.css";
 
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Search, ZoomIn, ZoomOut, RotateCw, Download } from "lucide-react";
+
 const testHighlights: Record<string, Array<IHighlight>> = _testHighlights;
 
 const getNextId = () => String(Math.random()).slice(2);
@@ -101,59 +107,117 @@ export default function PdfHighlight() {
   };
 
   return (
-    <div className="App" style={{ display: "flex", height: "100vh" }}>
-      <Sidebar highlights={highlights} resetHighlights={resetHighlights} toggleDocument={toggleDocument} />
-      <div
-        style={{
-          height: "100vh",
-          width: "75vw",
-          position: "relative",
-        }}>
-        <PdfLoader url={url} beforeLoad={<Spinner />}>
-          {(pdfDocument) => (
-            <PdfHighlighter
-              pdfDocument={pdfDocument}
-              enableAreaSelection={(event) => event.altKey}
-              onScrollChange={resetHash}
-              scrollRef={(scrollTo) => {
-                scrollViewerTo.current = scrollTo;
-                scrollToHighlightFromHash();
-              }}
-              onSelectionFinished={(position, content, hideTipAndSelection, transformSelection) => (
-                <Tip
-                  onOpen={transformSelection}
-                  onConfirm={(comment) => {
-                    addHighlight({ content, position, comment });
-                    hideTipAndSelection();
-                  }}
-                />
-              )}
-              highlightTransform={(highlight, index, setTip, hideTip, viewportToScaled, screenshot, isScrolledTo) => {
-                const isTextHighlight = !highlight.content?.image;
-
-                const component = isTextHighlight ? (
-                  <Highlight isScrolledTo={isScrolledTo} position={highlight.position} comment={highlight.comment} />
-                ) : (
-                  <AreaHighlight
-                    isScrolledTo={isScrolledTo}
-                    highlight={highlight}
-                    onChange={(boundingRect) => {
-                      updateHighlight(highlight.id, { boundingRect: viewportToScaled(boundingRect) }, { image: screenshot(boundingRect) });
-                    }}
-                  />
-                );
-
-                return (
-                  <Popup popupContent={<HighlightPopup {...highlight} />} onMouseOver={(popupContent) => setTip(highlight, (highlight) => popupContent)} onMouseOut={hideTip} key={index}>
-                    {component}
-                  </Popup>
-                );
-              }}
-              highlights={highlights}
-            />
-          )}
-        </PdfLoader>
+    <div className="h-[100dvh] w-[100dvw] flex flex-col">
+      {/* Top Toolbar */}
+      <div className="border-b p-2 flex items-center justify-between shrink-0 bg-background">
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="icon">
+            <ZoomIn className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="icon">
+            <ZoomOut className="h-4 w-4" />
+          </Button>
+          <Separator orientation="vertical" className="h-6" />
+          <Button variant="outline" size="icon">
+            <RotateCw className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="icon">
+            <Download className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="icon">
+            <Search className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
+
+      {/* Main Content */}
+      <ResizablePanelGroup direction="horizontal" className="flex-1 relative">
+        {/* Left Sidebar */}
+        <ResizablePanel defaultSize={20} minSize={15} maxSize={40}>
+          <div className="h-full overflow-auto">
+            <ScrollArea className="h-full">
+              <Sidebar highlights={highlights} resetHighlights={resetHighlights} toggleDocument={toggleDocument} />
+            </ScrollArea>
+          </div>
+        </ResizablePanel>
+
+        <ResizableHandle />
+
+        {/* PDF Viewer */}
+        <ResizablePanel defaultSize={60}>
+          <div className="h-full relative">
+            <div className="absolute inset-0 overflow-auto">
+              <PdfLoader url={url} beforeLoad={<Spinner />}>
+                {(pdfDocument) => (
+                  <PdfHighlighter
+                    pdfDocument={pdfDocument}
+                    enableAreaSelection={(event) => event.altKey}
+                    onScrollChange={resetHash}
+                    scrollRef={(scrollTo) => {
+                      scrollViewerTo.current = scrollTo;
+                      scrollToHighlightFromHash();
+                    }}
+                    onSelectionFinished={(position, content, hideTipAndSelection, transformSelection) => (
+                      <Tip
+                        onOpen={transformSelection}
+                        onConfirm={(comment) => {
+                          addHighlight({ content, position, comment });
+                          hideTipAndSelection();
+                        }}
+                      />
+                    )}
+                    highlightTransform={(highlight, index, setTip, hideTip, viewportToScaled, screenshot, isScrolledTo) => {
+                      const isTextHighlight = !highlight.content?.image;
+
+                      const component = isTextHighlight ? (
+                        <Highlight isScrolledTo={isScrolledTo} position={highlight.position} comment={highlight.comment} />
+                      ) : (
+                        <AreaHighlight
+                          isScrolledTo={isScrolledTo}
+                          highlight={highlight}
+                          onChange={(boundingRect) => {
+                            updateHighlight(highlight.id, { boundingRect: viewportToScaled(boundingRect) }, { image: screenshot(boundingRect) });
+                          }}
+                        />
+                      );
+
+                      return (
+                        <Popup popupContent={<HighlightPopup {...highlight} />} onMouseOver={(popupContent) => setTip(highlight, (highlight) => popupContent)} onMouseOut={hideTip} key={index}>
+                          {component}
+                        </Popup>
+                      );
+                    }}
+                    highlights={highlights}
+                  />
+                )}
+              </PdfLoader>
+            </div>
+          </div>
+        </ResizablePanel>
+
+        <ResizableHandle />
+
+        {/* Right Sidebar */}
+        <ResizablePanel defaultSize={20} minSize={15} maxSize={40}>
+          <div className="h-full overflow-auto">
+            <ScrollArea className="h-full">
+              <div className="p-4 space-y-4">
+                <h3 className="text-lg font-semibold">Document Info</h3>
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">Title: Sample Document</p>
+                  <p className="text-sm text-muted-foreground">Pages: 10</p>
+                  <p className="text-sm text-muted-foreground">Created: 2024-03-21</p>
+                </div>
+                <Separator />
+                <h3 className="text-lg font-semibold">Notes</h3>
+                <div className="text-sm text-muted-foreground">No notes yet</div>
+              </div>
+            </ScrollArea>
+          </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 }
