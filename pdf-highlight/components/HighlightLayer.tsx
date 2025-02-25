@@ -1,13 +1,8 @@
+"use client";
+
 import type { PDFViewer } from "pdfjs-dist/web/pdf_viewer.mjs";
 import { viewportToScaled } from "../lib/coordinates";
-import type {
-  IHighlight,
-  LTWH,
-  LTWHP,
-  Position,
-  Scaled,
-  ScaledPosition,
-} from "../types";
+import type { IHighlight, LTWH, LTWHP, Position, Scaled, ScaledPosition } from "../types";
 import type { T_ViewportHighlight } from "./PdfHighlighter";
 
 interface HighlightLayerProps<T_HT> {
@@ -17,10 +12,7 @@ interface HighlightLayerProps<T_HT> {
   highlightTransform: (
     highlight: T_ViewportHighlight<T_HT>,
     index: number,
-    setTip: (
-      highlight: T_ViewportHighlight<T_HT>,
-      callback: (highlight: T_ViewportHighlight<T_HT>) => JSX.Element,
-    ) => void,
+    setTip: (highlight: T_ViewportHighlight<T_HT>, callback: (highlight: T_ViewportHighlight<T_HT>) => JSX.Element) => void,
     hideTip: () => void,
     viewportToScaled: (rect: LTWHP) => Scaled,
     screenshot: (position: LTWH) => string,
@@ -78,14 +70,11 @@ export function HighlightLayer<T_HT extends IHighlight>({
           },
           hideTipAndSelection,
           (rect) => {
-            const viewport = viewer.getPageView(
-              (rect.pageNumber || Number.parseInt(pageNumber)) - 1,
-            ).viewport;
+            const viewport = viewer.getPageView((rect.pageNumber || Number.parseInt(pageNumber)) - 1).viewport;
 
             return viewportToScaled(rect, viewport);
           },
-          (boundingRect) =>
-            screenshot(boundingRect, Number.parseInt(pageNumber)),
+          (boundingRect) => screenshot(boundingRect, Number.parseInt(pageNumber)),
           isScrolledTo,
         );
       })}

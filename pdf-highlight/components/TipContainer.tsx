@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import styles from "../style/TipContainer.module.css";
 import type { LTWHP } from "../types";
@@ -13,12 +15,7 @@ function clamp(value: number, left: number, right: number) {
   return Math.min(Math.max(value, left), right);
 }
 
-export function TipContainer({
-  children,
-  style,
-  scrollTop,
-  pageBoundingRect,
-}: Props) {
+export function TipContainer({ children, style, scrollTop, pageBoundingRect }: Props) {
   const [height, setHeight] = useState(0);
   const [width, setWidth] = useState(0);
   const nodeRef = useRef<HTMLDivElement | null>(null);
@@ -70,8 +67,7 @@ export function TipContainer({
         top,
         left,
       }}
-      ref={nodeRef}
-    >
+      ref={nodeRef}>
       {childrenWithProps}
     </div>
   );

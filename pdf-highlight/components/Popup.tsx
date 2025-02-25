@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { MouseMonitor } from "./MouseMonitor";
 
@@ -8,12 +10,7 @@ interface Props {
   children: JSX.Element;
 }
 
-export function Popup({
-  onMouseOver,
-  popupContent,
-  onMouseOut,
-  children,
-}: Props) {
+export function Popup({ onMouseOver, popupContent, onMouseOut, children }: Props) {
   const [mouseIn, setMouseIn] = useState(false);
 
   return (
@@ -30,16 +27,14 @@ export function Popup({
               onMouseOut();
             }}
             paddingX={60}
-            paddingY={30}
-          >
+            paddingY={30}>
             {popupContent}
           </MouseMonitor>,
         );
       }}
       onMouseOut={() => {
         setMouseIn(false);
-      }}
-    >
+      }}>
       {children}
     </div>
   );

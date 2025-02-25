@@ -1,3 +1,5 @@
+"use client";
+
 import { Component } from "react";
 import styles from "../style/Tip.module.css";
 
@@ -41,8 +43,7 @@ export class Tip extends Component<Props, State> {
             onClick={() => {
               onOpen();
               this.setState({ compact: false });
-            }}
-          >
+            }}>
             Add highlight
           </div>
         ) : (
@@ -51,17 +52,14 @@ export class Tip extends Component<Props, State> {
             onSubmit={(event) => {
               event.preventDefault();
               onConfirm({ text, emoji });
-            }}
-          >
+            }}>
             <div>
               <textarea
                 placeholder="Your comment"
                 // biome-ignore lint/a11y/noAutofocus: This is an example app
                 autoFocus
                 value={text}
-                onChange={(event) =>
-                  this.setState({ text: event.target.value })
-                }
+                onChange={(event) => this.setState({ text: event.target.value })}
                 ref={(node) => {
                   if (node) {
                     node.focus();
@@ -71,15 +69,7 @@ export class Tip extends Component<Props, State> {
               <div>
                 {["💩", "😱", "😍", "🔥", "😳", "⚠️"].map((_emoji) => (
                   <label key={_emoji}>
-                    <input
-                      checked={emoji === _emoji}
-                      type="radio"
-                      name="emoji"
-                      value={_emoji}
-                      onChange={(event) =>
-                        this.setState({ emoji: event.target.value })
-                      }
-                    />
+                    <input checked={emoji === _emoji} type="radio" name="emoji" value={_emoji} onChange={(event) => this.setState({ emoji: event.target.value })} />
                     {_emoji}
                   </label>
                 ))}

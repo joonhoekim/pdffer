@@ -1,3 +1,5 @@
+"use client";
+
 import { Rnd } from "react-rnd";
 import { getPageFromElement } from "../lib/pdfjs-dom";
 import styles from "../style/AreaHighlight.module.css";
@@ -9,18 +11,9 @@ interface Props {
   isScrolledTo: boolean;
 }
 
-export function AreaHighlight({
-  highlight,
-  onChange,
-  isScrolledTo,
-  ...otherProps
-}: Props) {
+export function AreaHighlight({ highlight, onChange, isScrolledTo, ...otherProps }: Props) {
   return (
-    <div
-      className={`${styles.areaHighlight} ${
-        isScrolledTo ? styles.scrolledTo : ""
-      }`}
-    >
+    <div className={`${styles.areaHighlight} ${isScrolledTo ? styles.scrolledTo : ""}`}>
       <Rnd
         className={styles.part}
         onDragStop={(_, data) => {

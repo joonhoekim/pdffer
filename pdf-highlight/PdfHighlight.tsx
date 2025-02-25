@@ -8,9 +8,12 @@ import type { Content, IHighlight, NewHighlight, ScaledPosition } from "./index"
 import { Sidebar } from "./Sidebar";
 import { Spinner } from "./Spinner";
 import { testHighlights as _testHighlights } from "./test-highlights";
-import "react-pdf-highlighter/dist/style.css";
+
+// nextjs default config doew not allow import node_modules files directly
+// import "react-pdf-highlighter/dist/style.css";
 
 import "./style/App.css";
+import "./style/style.css";
 
 const testHighlights: Record<string, Array<IHighlight>> = _testHighlights;
 
@@ -39,6 +42,8 @@ const SECONDARY_PDF_URL = "https://arxiv.org/pdf/1604.02480";
 export default function PdfHighlight() {
   const searchParams = new URLSearchParams(document.location.search);
   const initialUrl = searchParams.get("url") || PRIMARY_PDF_URL;
+
+  console.log("initialUrl", initialUrl);
 
   const [url, setUrl] = useState(initialUrl);
   const [highlights, setHighlights] = useState<Array<IHighlight>>(testHighlights[initialUrl] ? [...testHighlights[initialUrl]] : []);

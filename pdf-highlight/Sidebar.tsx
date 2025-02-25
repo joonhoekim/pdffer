@@ -1,3 +1,5 @@
+"use client";
+
 import type { IHighlight } from "./index";
 
 interface Props {

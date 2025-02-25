@@ -1,3 +1,5 @@
+"use client";
+
 import styles from "../style/Highlight.module.css";
 import type { LTWHP } from "../types.js";
 
@@ -16,28 +18,18 @@ interface Props {
   isScrolledTo: boolean;
 }
 
-export function Highlight({
-  position,
-  onClick,
-  onMouseOver,
-  onMouseOut,
-  comment,
-  isScrolledTo,
-}: Props) {
+export function Highlight({ position, onClick, onMouseOver, onMouseOut, comment, isScrolledTo }: Props) {
   const { rects, boundingRect } = position;
 
   return (
-    <div
-      className={`Highlight ${styles.highlight} ${isScrolledTo ? styles.scrolledTo : ""}`}
-    >
+    <div className={`Highlight ${styles.highlight} ${isScrolledTo ? styles.scrolledTo : ""}`}>
       {comment ? (
         <div
           className={`Highlight__emoji ${styles.emoji}`}
           style={{
             left: 20,
             top: boundingRect.top,
-          }}
-        >
+          }}>
           {comment.emoji}
         </div>
       ) : null}

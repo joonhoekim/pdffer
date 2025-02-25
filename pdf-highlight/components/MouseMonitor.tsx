@@ -1,3 +1,5 @@
+"use client";
+
 import React, { Component } from "react";
 
 interface Props {
@@ -23,10 +25,8 @@ export class MouseMonitor extends Component<Props> {
     // TODO: see if possible to optimize
     const { left, top, width, height } = this.container.getBoundingClientRect();
 
-    const inBoundsX =
-      clientX > left - paddingX && clientX < left + width + paddingX;
-    const inBoundsY =
-      clientY > top - paddingY && clientY < top + height + paddingY;
+    const inBoundsX = clientX > left - paddingX && clientX < left + width + paddingX;
+    const inBoundsY = clientY > top - paddingY && clientY < top + height + paddingY;
 
     const isNear = inBoundsX && inBoundsY;
 
@@ -50,11 +50,8 @@ export class MouseMonitor extends Component<Props> {
 
   render() {
     // eslint-disable-next-line
-    const { onMoveAway, paddingX, paddingY, children, ...restProps } =
-      this.props;
+    const { onMoveAway, paddingX, paddingY, children, ...restProps } = this.props;
 
-    return (
-      <div ref={this.attachRef}>{React.cloneElement(children, restProps)}</div>
-    );
+    return <div ref={this.attachRef}>{React.cloneElement(children, restProps)}</div>;
   }
 }

@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import { isHTMLElement } from "../lib/pdfjs-dom";
 import styles from "../style/MouseSelection.module.css";
@@ -9,11 +11,7 @@ interface Coords {
 }
 
 interface Props {
-  onSelection: (
-    startTarget: HTMLElement,
-    boundingRect: LTWH,
-    resetSelection: () => void,
-  ) => void;
+  onSelection: (startTarget: HTMLElement, boundingRect: LTWH, resetSelection: () => void) => void;
   onDragStart: () => void;
   onDragEnd: () => void;
   shouldStart: (event: MouseEvent) => boolean;
@@ -27,16 +25,9 @@ const getBoundingRect = (start: Coords, end: Coords): LTWH => ({
   height: Math.abs(end.y - start.y),
 });
 
-const shouldRender = (boundingRect: LTWH) =>
-  boundingRect.width >= 1 && boundingRect.height >= 1;
+const shouldRender = (boundingRect: LTWH) => boundingRect.width >= 1 && boundingRect.height >= 1;
 
-export function MouseSelection({
-  onSelection,
-  onDragStart,
-  onDragEnd,
-  shouldStart,
-  onChange,
-}: Props) {
+export function MouseSelection({ onSelection, onDragStart, onDragEnd, shouldStart, onChange }: Props) {
   const [locked, setLocked] = useState(false);
   const [start, setStart] = useState<Coords | null>(null);
   const [end, setEnd] = useState<Coords | null>(null);
@@ -79,11 +70,7 @@ export function MouseSelection({
       const containerBoundingRect = container.getBoundingClientRect();
       return {
         x: pageX - containerBoundingRect.left + container.scrollLeft,
-        y:
-          pageY -
-          containerBoundingRect.top +
-          container.scrollTop -
-          window.scrollY,
+        y: pageY - containerBoundingRect.top + container.scrollTop - window.scrollY,
       };
     };
 
@@ -123,12 +110,7 @@ export function MouseSelection({
         const endCoords = containerCoords(event.pageX, event.pageY);
         const boundingRect = getBoundingRect(currentStart, endCoords);
 
-        if (
-          !(event.target instanceof Element) ||
-          !isHTMLElement(event.target) ||
-          !container.contains(event.target) ||
-          !shouldRender(boundingRect)
-        ) {
+        if (!(event.target instanceof Element) || !isHTMLElement(event.target) || !container.contains(event.target) || !shouldRender(boundingRect)) {
           reset();
           return;
         }
@@ -155,14 +137,5 @@ export function MouseSelection({
     };
   }, [shouldStart, onDragStart, onDragEnd, onSelection, reset]);
 
-  return (
-    <div ref={rootRef}>
-      {start && end && (
-        <div
-          className={styles.mouseSelection}
-          style={getBoundingRect(start, end)}
-        />
-      )}
-    </div>
-  );
+  return <div ref={rootRef}>{start && end && <div className={styles.mouseSelection} style={getBoundingRect(start, end)} />}</div>;
 }

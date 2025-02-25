@@ -1,3 +1,5 @@
+"use client";
+
 import { GlobalWorkerOptions, getDocument } from "pdfjs-dist";
 import type { PDFDocumentProxy } from "pdfjs-dist";
 import React, { Component } from "react";
@@ -27,7 +29,7 @@ export class PdfLoader extends Component<Props, State> {
   };
 
   static defaultProps = {
-    workerSrc: "https://unpkg.com/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs",
+    workerSrc: "https://unpkg.com/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs",
   };
 
   documentRef = React.createRef<HTMLElement>();
@@ -96,11 +98,7 @@ export class PdfLoader extends Component<Props, State> {
     return (
       <>
         <span ref={this.documentRef} />
-        {error
-          ? this.renderError()
-          : !pdfDocument || !children
-            ? beforeLoad
-            : children(pdfDocument)}
+        {error ? this.renderError() : !pdfDocument || !children ? beforeLoad : children(pdfDocument)}
       </>
     );
   }
