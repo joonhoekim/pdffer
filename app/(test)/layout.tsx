@@ -17,12 +17,10 @@ export default function Layout({
 }) {
   return (
     <>
-      <div>
-        <Link href="/">
-          <Home />
-        </Link>
-        {children}
-      </div>
+      <Link href="/" className="absolute top-0 left-0">
+        <Home />
+      </Link>
+      {children}
     </>
   );
 }

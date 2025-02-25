@@ -19,7 +19,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Search, ZoomIn, ZoomOut, RotateCw, Download } from "lucide-react";
+import { Search, ZoomIn, ZoomOut, RotateCw, Download, PanelLeftClose, PanelRightClose } from "lucide-react";
 
 const testHighlights: Record<string, Array<IHighlight>> = _testHighlights;
 
@@ -53,6 +53,8 @@ export default function PdfHighlight() {
 
   const [url, setUrl] = useState(initialUrl);
   const [highlights, setHighlights] = useState<Array<IHighlight>>(testHighlights[initialUrl] ? [...testHighlights[initialUrl]] : []);
+  const [showLeftSidebar, setShowLeftSidebar] = useState(true);
+  const [showRightSidebar, setShowRightSidebar] = useState(true);
 
   const resetHighlights = () => {
     setHighlights([]);
@@ -111,6 +113,10 @@ export default function PdfHighlight() {
       {/* Top Toolbar */}
       <div className="border-b p-2 flex items-center justify-between shrink-0 bg-background">
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="icon" onClick={() => setShowLeftSidebar(!showLeftSidebar)} className={!showLeftSidebar ? "bg-muted" : ""}>
+            <PanelLeftClose className="h-4 w-4" />
+          </Button>
+          <Separator orientation="vertical" className="h-6" />
           <Button variant="outline" size="icon">
             <ZoomIn className="h-4 w-4" />
           </Button>
@@ -129,24 +135,31 @@ export default function PdfHighlight() {
           <Button variant="outline" size="icon">
             <Search className="h-4 w-4" />
           </Button>
+          <Separator orientation="vertical" className="h-6" />
+          <Button variant="outline" size="icon" onClick={() => setShowRightSidebar(!showRightSidebar)} className={!showRightSidebar ? "bg-muted" : ""}>
+            <PanelRightClose className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
       {/* Main Content */}
       <ResizablePanelGroup direction="horizontal" className="flex-1 relative">
         {/* Left Sidebar */}
-        <ResizablePanel defaultSize={20} minSize={15} maxSize={40}>
-          <div className="h-full overflow-auto">
-            <ScrollArea className="h-full">
-              <Sidebar highlights={highlights} resetHighlights={resetHighlights} toggleDocument={toggleDocument} />
-            </ScrollArea>
-          </div>
-        </ResizablePanel>
-
-        <ResizableHandle />
+        {showLeftSidebar && (
+          <>
+            <ResizablePanel defaultSize={20} minSize={15} maxSize={40}>
+              <div className="h-full overflow-auto">
+                <ScrollArea className="h-full">
+                  <Sidebar highlights={highlights} resetHighlights={resetHighlights} toggleDocument={toggleDocument} />
+                </ScrollArea>
+              </div>
+            </ResizablePanel>
+            <ResizableHandle />
+          </>
+        )}
 
         {/* PDF Viewer */}
-        <ResizablePanel defaultSize={60}>
+        <ResizablePanel defaultSize={showLeftSidebar && showRightSidebar ? 60 : 100}>
           <div className="h-full relative">
             <div className="absolute inset-0 overflow-auto">
               <PdfLoader url={url} beforeLoad={<Spinner />}>
@@ -197,26 +210,29 @@ export default function PdfHighlight() {
           </div>
         </ResizablePanel>
 
-        <ResizableHandle />
-
         {/* Right Sidebar */}
-        <ResizablePanel defaultSize={20} minSize={15} maxSize={40}>
-          <div className="h-full overflow-auto">
-            <ScrollArea className="h-full">
-              <div className="p-4 space-y-4">
-                <h3 className="text-lg font-semibold">Document Info</h3>
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">Title: Sample Document</p>
-                  <p className="text-sm text-muted-foreground">Pages: 10</p>
-                  <p className="text-sm text-muted-foreground">Created: 2024-03-21</p>
-                </div>
-                <Separator />
-                <h3 className="text-lg font-semibold">Notes</h3>
-                <div className="text-sm text-muted-foreground">No notes yet</div>
+        {showRightSidebar && (
+          <>
+            <ResizableHandle />
+            <ResizablePanel defaultSize={20} minSize={15} maxSize={40}>
+              <div className="h-full overflow-auto">
+                <ScrollArea className="h-full">
+                  <div className="p-4 space-y-4">
+                    <h3 className="text-lg font-semibold">Document Info</h3>
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">Title: Sample Document</p>
+                      <p className="text-sm text-muted-foreground">Pages: 10</p>
+                      <p className="text-sm text-muted-foreground">Created: 2024-03-21</p>
+                    </div>
+                    <Separator />
+                    <h3 className="text-lg font-semibold">Notes</h3>
+                    <div className="text-sm text-muted-foreground">No notes yet</div>
+                  </div>
+                </ScrollArea>
               </div>
-            </ScrollArea>
-          </div>
-        </ResizablePanel>
+            </ResizablePanel>
+          </>
+        )}
       </ResizablePanelGroup>
     </div>
   );
