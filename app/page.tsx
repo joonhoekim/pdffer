@@ -51,13 +51,7 @@ export default function Page() {
             </Button>
           </Link>
 
-          <Link href="/pdfjs-refactor">
-            <Button className="w-full w-max-lg" variant="outline">
-              <View /> 6. pdf.js scroll viewer refactored <CheckCheck color="green" />
-            </Button>
-          </Link>
-
-          <Link href="/pdf-highlight">
+          <Link href="/pdfjs-highlight">
             <Button className="w-full w-max-lg" variant="outline">
               <Highlighter /> 7. pdf 필터링 기반 하이라이팅
             </Button>

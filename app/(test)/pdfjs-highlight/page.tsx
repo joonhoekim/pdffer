@@ -1,7 +1,5 @@
 "use client";
 
-// import { PdfLoader } from "@/components/pdfjs/pdf-viewer/PdfViewer";
-
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
