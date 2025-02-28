@@ -23,14 +23,18 @@ import { Search, ZoomIn, ZoomOut, RotateCw, Download, PanelLeftClose, PanelRight
 
 const testHighlights: Record<string, Array<IHighlight>> = _testHighlights;
 
+// 하이라이트 ID 생성을 위한 랜덤 값 생성 함수
 const getNextId = () => String(Math.random()).slice(2);
 
+// URL 해시에서 하이라이트 ID를 추출하는 함수
 const parseIdFromHash = () => document.location.hash.slice("#highlight-".length);
 
+// URL 해시를 초기화하는 함수
 const resetHash = () => {
   document.location.hash = "";
 };
 
+// 하이라이트 팝업 컴포넌트 - 텍스트와 이모지를 표시
 const HighlightPopup = ({
   comment,
 }: {
@@ -42,32 +46,37 @@ const HighlightPopup = ({
     </div>
   ) : null;
 
+// 기본 PDF URL 설정
 const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021";
 const SECONDARY_PDF_URL = "https://arxiv.org/pdf/1604.02480";
 
 export default function PdfHighlight() {
+  // URL 파라미터에서 PDF URL을 가져오거나 기본 URL 사용
   const searchParams = new URLSearchParams(document.location.search);
   const initialUrl = searchParams.get("url") || PRIMARY_PDF_URL;
 
-  console.log("initialUrl", initialUrl);
+  // 상태 관리
+  const [url, setUrl] = useState(initialUrl); // 현재 PDF URL
+  const [highlights, setHighlights] = useState<Array<IHighlight>>(testHighlights[initialUrl] ? [...testHighlights[initialUrl]] : []); // 하이라이트 목록
+  const [showLeftSidebar, setShowLeftSidebar] = useState(true); // 왼쪽 사이드바 표시 여부
+  const [showRightSidebar, setShowRightSidebar] = useState(true); // 오른쪽 사이드바 표시 여부
 
-  const [url, setUrl] = useState(initialUrl);
-  const [highlights, setHighlights] = useState<Array<IHighlight>>(testHighlights[initialUrl] ? [...testHighlights[initialUrl]] : []);
-  const [showLeftSidebar, setShowLeftSidebar] = useState(true);
-  const [showRightSidebar, setShowRightSidebar] = useState(true);
-
+  // 모든 하이라이트를 초기화하는 함수
   const resetHighlights = () => {
     setHighlights([]);
   };
 
+  // PDF 문서를 전환하는 함수
   const toggleDocument = () => {
     const newUrl = url === PRIMARY_PDF_URL ? SECONDARY_PDF_URL : PRIMARY_PDF_URL;
     setUrl(newUrl);
     setHighlights(testHighlights[newUrl] ? [...testHighlights[newUrl]] : []);
   };
 
+  // PDF 뷰어 스크롤 참조
   const scrollViewerTo = useRef((highlight: IHighlight) => {});
 
+  // URL 해시가 변경될 때 해당 하이라이트로 스크롤하는 함수
   const scrollToHighlightFromHash = useCallback(() => {
     const highlight = getHighlightById(parseIdFromHash());
     if (highlight) {
@@ -75,6 +84,7 @@ export default function PdfHighlight() {
     }
   }, []);
 
+  // 해시 변경 이벤트 리스너 등록
   useEffect(() => {
     window.addEventListener("hashchange", scrollToHighlightFromHash, false);
     return () => {
@@ -82,15 +92,18 @@ export default function PdfHighlight() {
     };
   }, [scrollToHighlightFromHash]);
 
+  // ID로 하이라이트를 찾는 함수
   const getHighlightById = (id: string) => {
     return highlights.find((highlight) => highlight.id === id);
   };
 
+  // 새로운 하이라이트를 추가하는 함수
   const addHighlight = (highlight: NewHighlight) => {
     console.log("Saving highlight", highlight);
     setHighlights((prevHighlights) => [{ ...highlight, id: getNextId() }, ...prevHighlights]);
   };
 
+  // 기존 하이라이트를 업데이트하는 함수
   const updateHighlight = (highlightId: string, position: Partial<ScaledPosition>, content: Partial<Content>) => {
     console.log("Updating highlight", highlightId, position, content);
     setHighlights((prevHighlights) =>
@@ -110,8 +123,9 @@ export default function PdfHighlight() {
 
   return (
     <div className="h-[100dvh] w-[100dvw] flex flex-col">
-      {/* Top Toolbar */}
+      {/* 상단 툴바 - 확대/축소, 회전, 다운로드 등의 기능 버튼 */}
       <div className="border-b p-2 flex items-center justify-between shrink-0 bg-background">
+        {/* 왼쪽 툴바 버튼 그룹 */}
         <div className="flex items-center gap-2">
           <Button variant="outline" size="icon" onClick={() => setShowLeftSidebar(!showLeftSidebar)} className={!showLeftSidebar ? "bg-muted" : ""}>
             <PanelLeftClose className="h-4 w-4" />
@@ -131,6 +145,7 @@ export default function PdfHighlight() {
             <Download className="h-4 w-4" />
           </Button>
         </div>
+        {/* 오른쪽 툴바 버튼 그룹 */}
         <div className="flex items-center gap-2">
           <Button variant="outline" size="icon">
             <Search className="h-4 w-4" />
@@ -142,9 +157,9 @@ export default function PdfHighlight() {
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* 메인 콘텐츠 영역 - 사이드바와 PDF 뷰어를 포함 */}
       <ResizablePanelGroup direction="horizontal" className="flex-1 relative">
-        {/* Left Sidebar */}
+        {/* 왼쪽 사이드바 - 하이라이트 목록 표시 */}
         {showLeftSidebar && (
           <>
             <ResizablePanel defaultSize={20} minSize={15} maxSize={40}>
@@ -158,7 +173,7 @@ export default function PdfHighlight() {
           </>
         )}
 
-        {/* PDF Viewer */}
+        {/* PDF 뷰어 - 문서 표시 및 하이라이트 기능 */}
         <ResizablePanel defaultSize={showLeftSidebar && showRightSidebar ? 60 : 100}>
           <div className="h-full relative">
             <div className="absolute inset-0 overflow-auto">
@@ -166,12 +181,13 @@ export default function PdfHighlight() {
                 {(pdfDocument) => (
                   <PdfHighlighter
                     pdfDocument={pdfDocument}
-                    enableAreaSelection={(event) => event.altKey}
+                    enableAreaSelection={(event) => event.altKey} // Alt 키를 누른 상태에서 영역 선택 가능
                     onScrollChange={resetHash}
                     scrollRef={(scrollTo) => {
                       scrollViewerTo.current = scrollTo;
                       scrollToHighlightFromHash();
                     }}
+                    // 텍스트 선택 완료 시 팁(코멘트 입력) 표시
                     onSelectionFinished={(position, content, hideTipAndSelection, transformSelection) => (
                       <Tip
                         onOpen={transformSelection}
@@ -181,6 +197,7 @@ export default function PdfHighlight() {
                         }}
                       />
                     )}
+                    // 하이라이트 렌더링 변환 함수
                     highlightTransform={(highlight, index, setTip, hideTip, viewportToScaled, screenshot, isScrolledTo) => {
                       const isTextHighlight = !highlight.content?.image;
 
@@ -210,7 +227,7 @@ export default function PdfHighlight() {
           </div>
         </ResizablePanel>
 
-        {/* Right Sidebar */}
+        {/* 오른쪽 사이드바 - 문서 정보와 노트 표시 */}
         {showRightSidebar && (
           <>
             <ResizableHandle />
