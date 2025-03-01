@@ -55,7 +55,7 @@ export default function PdfViewer() {
           return;
         }
 
-        pdfjs.GlobalWorkerOptions.workerSrc = "/pdfjs/pdf.worker.min.mjs";
+        pdfjs.GlobalWorkerOptions.workerSrc = "https://unpkg.com/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs";
         console.log("PDF.js 워커 경로 설정 완료");
 
         pdfLibRef.current = pdfjs;
@@ -170,7 +170,8 @@ export default function PdfViewer() {
     try {
       console.log("PDF 로드 태스크 생성 시작");
       const loadingTask = pdfLibRef.current.getDocument({
-        url: "/pdf-example/test-big.pdf",
+        // url: "/pdf-example/test-big.pdf",
+        url: "https://arxiv.org/pdf/1708.08021",
         cMapUrl: "/pdfjs/cmaps/",
         cMapPacked: true,
         verbosity: 1,

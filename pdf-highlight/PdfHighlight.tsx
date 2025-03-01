@@ -12,7 +12,7 @@ import { testHighlights as _testHighlights } from "./test-highlights";
 // nextjs default config doew not allow import node_modules files directly
 // import "react-pdf-highlighter/dist/style.css";
 
-import "./style/App.css";
+// import "./style/App.css";
 // import "./style/style.css";
 
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
@@ -47,7 +47,8 @@ const HighlightPopup = ({
   ) : null;
 
 // 기본 PDF URL 설정
-const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021";
+// const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021";
+const PRIMARY_PDF_URL = "/pdf-example/test-big.pdf";
 const SECONDARY_PDF_URL = "https://arxiv.org/pdf/1604.02480";
 
 export default function PdfHighlight() {
@@ -74,7 +75,7 @@ export default function PdfHighlight() {
   };
 
   // PDF 뷰어 스크롤 참조
-  const scrollViewerTo = useRef((highlight: IHighlight) => {});
+  const scrollViewerTo = useRef<(highlight: IHighlight) => void>(() => {});
 
   // URL 해시가 변경될 때 해당 하이라이트로 스크롤하는 함수
   const scrollToHighlightFromHash = useCallback(() => {
@@ -177,7 +178,7 @@ export default function PdfHighlight() {
         <ResizablePanel defaultSize={showLeftSidebar && showRightSidebar ? 60 : 100}>
           <div className="h-full relative">
             <div className="absolute inset-0 overflow-auto">
-              <PdfLoader url={url} beforeLoad={<Spinner />}>
+              <PdfLoader url={url} beforeLoad={<Spinner />} workerSrc="https://unpkg.com/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs">
                 {(pdfDocument) => (
                   <PdfHighlighter
                     pdfDocument={pdfDocument}
@@ -214,7 +215,7 @@ export default function PdfHighlight() {
                       );
 
                       return (
-                        <Popup popupContent={<HighlightPopup {...highlight} />} onMouseOver={(popupContent) => setTip(highlight, (highlight) => popupContent)} onMouseOut={hideTip} key={index}>
+                        <Popup popupContent={<HighlightPopup {...highlight} />} onMouseOver={(popupContent) => setTip(highlight, () => popupContent)} onMouseOut={hideTip} key={index}>
                           {component}
                         </Popup>
                       );
