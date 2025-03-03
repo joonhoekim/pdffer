@@ -46,6 +46,3 @@ next-env.d.ts
 # Storage directory contents
 storage/*
 !storage/README.md
-
-# Cursor
-.cursorrules
