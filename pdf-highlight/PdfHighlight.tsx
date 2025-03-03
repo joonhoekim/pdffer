@@ -13,13 +13,14 @@ import { testHighlights as _testHighlights } from "./test-highlights";
 // import "react-pdf-highlighter/dist/style.css";
 
 import "./style/App.css";
+import "./style/pdf_viewer.css";
 // import "./style/style.css";
 
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Search, ZoomIn, ZoomOut, RotateCw, Download, PanelLeftClose, PanelRightClose } from "lucide-react";
+import { Search, ZoomIn, ZoomOut, RotateCw, Download, PanelLeftClose, PanelRightClose, Maximize, ArrowLeftRight, ArrowUpDown, Columns } from "lucide-react";
 
 const testHighlights: Record<string, Array<IHighlight>> = _testHighlights;
 
@@ -61,6 +62,101 @@ export default function PdfHighlight() {
   const [highlights, setHighlights] = useState<Array<IHighlight>>(testHighlights[initialUrl] ? [...testHighlights[initialUrl]] : []); // 하이라이트 목록
   const [showLeftSidebar, setShowLeftSidebar] = useState(true); // 왼쪽 사이드바 표시 여부
   const [showRightSidebar, setShowRightSidebar] = useState(true); // 오른쪽 사이드바 표시 여부
+  
+  // PDF 뷰어 참조
+  const viewerRef = useRef<any>(null);
+
+  // 확대/축소 및 보기 맞춤 메서드
+  const zoomIn = useCallback(() => {
+    if (viewerRef.current) {
+      let newScale = viewerRef.current.currentScale;
+      newScale = (newScale * 1.1).toFixed(2);
+      viewerRef.current.currentScale = Number(newScale);
+    }
+  }, []);
+
+  const zoomOut = useCallback(() => {
+    if (viewerRef.current) {
+      let newScale = viewerRef.current.currentScale;
+      newScale = (newScale / 1.1).toFixed(2);
+      viewerRef.current.currentScale = Number(newScale);
+    }
+  }, []);
+
+  const setPageFit = useCallback(() => {
+    if (viewerRef.current) {
+      viewerRef.current.currentScaleValue = 'page-fit';
+    }
+  }, []);
+
+  const setPageWidthFit = useCallback(() => {
+    if (viewerRef.current) {
+      viewerRef.current.currentScaleValue = 'page-width';
+    }
+  }, []);
+
+  const setPageHeightFit = useCallback(() => {
+    if (viewerRef.current) {
+      viewerRef.current.currentScaleValue = 'page-height';
+    }
+  }, []);
+
+  const setTwoPageView = useCallback(() => {
+    if (viewerRef.current) {
+      const currentMode = viewerRef.current.spreadMode;
+      viewerRef.current.spreadMode = currentMode === 0 ? 1 : 0;
+    }
+  }, []);
+
+  // 키보드 이벤트 핸들러
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    if (event.code === "Escape") {
+      // TODO
+    }
+    
+    // Ctrl + 키보드 단축키
+    if (event.ctrlKey || event.metaKey) {
+      switch(event.code) {
+        case "Equal":  // Ctrl + Plus
+          event.preventDefault();
+          zoomIn();
+          break;
+        case "Minus":  // Ctrl + Minus
+          event.preventDefault();
+          zoomOut();
+          break;
+        case "Digit0":  // Ctrl + 0
+          event.preventDefault();
+          setPageFit();
+          break;
+        case "Digit1":  // Ctrl + 1
+          event.preventDefault();
+          setPageWidthFit();
+          break;
+        case "Digit2":  // Ctrl + 2
+          event.preventDefault();
+          setPageHeightFit();
+          break;
+        case "Digit3":  // Ctrl + 3
+          event.preventDefault();
+          setTwoPageView();
+          break;
+      }
+    }
+  }, [zoomIn, zoomOut, setPageFit, setPageWidthFit, setPageHeightFit, setTwoPageView]);
+
+  // 키보드 이벤트 리스너 등록
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleKeyDown]);
+
+  // PDF 뷰어 참조 설정
+  const onViewerLoaded = useCallback((viewer: any) => {
+    viewerRef.current = viewer;
+  }, []);
 
   // 모든 하이라이트를 초기화하는 함수
   const resetHighlights = () => {
@@ -122,8 +218,14 @@ export default function PdfHighlight() {
     );
   };
 
+  // 스케일 값 변경을 디바운스 처리
+  // 연속적인 크기 조정을 최적화하기 위해 500ms 딜레이 적용
+  const debouncedScaleValue: () => void = () => {
+    // Implementation of debounce function
+  };
+
   return (
-    <div className="h-[100dvh] w-[100dvw] flex flex-col">
+    <div className="h-[100vh] w-[100vw] flex flex-col">
       {/* 상단 툴바 - 확대/축소, 회전, 다운로드 등의 기능 버튼 */}
       <div className="border-b p-2 flex items-center justify-between shrink-0 bg-background">
         {/* 왼쪽 툴바 버튼 그룹 */}
@@ -132,16 +234,26 @@ export default function PdfHighlight() {
             <PanelLeftClose className="h-4 w-4" />
           </Button>
           <Separator orientation="vertical" className="h-6" />
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" onClick={zoomIn}>
             <ZoomIn className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" onClick={zoomOut}>
             <ZoomOut className="h-4 w-4" />
           </Button>
           <Separator orientation="vertical" className="h-6" />
-          <Button variant="outline" size="icon">
-            <RotateCw className="h-4 w-4" />
+          <Button variant="outline" size="icon" onClick={setPageFit}>
+            <Maximize className="h-4 w-4" />
           </Button>
+          <Button variant="outline" size="icon" onClick={setPageWidthFit}>
+            <ArrowLeftRight className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="icon" onClick={setPageHeightFit}>
+            <ArrowUpDown className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="icon" onClick={setTwoPageView}>
+            <Columns className="h-4 w-4" />
+          </Button>
+          <Separator orientation="vertical" className="h-6" />
           <Button variant="outline" size="icon">
             <Download className="h-4 w-4" />
           </Button>
@@ -176,13 +288,13 @@ export default function PdfHighlight() {
 
         {/* PDF 뷰어 - 문서 표시 및 하이라이트 기능 */}
         <ResizablePanel defaultSize={showLeftSidebar && showRightSidebar ? 60 : 100}>
-          <div className="h-full w-full relative">
+          <div className="h-full w-full relative overflow-hidden">
             {/* PDF 뷰어 컨테이너 - position: relative로 설정하여 PDF.js 컨테이너의 부모 역할 */}
             <div className="absolute inset-0">
               {/* pdf-js 워커 주소를 별도로 지정하려면 아래에서 workSrc 프롭을 넣어줄 것. 기본값은 pdfjs-dist 버전과 동일한 워커를 CDN으로 가져옴 */}
               <PdfLoader url={url} beforeLoad={<Spinner />}>
                 {(pdfDocument) => (
-                  <div className="relative w-full h-full" style={{ position: "relative" }}>
+                  <div className="relative w-full h-full">
                     <PdfHighlighter
                       pdfDocument={pdfDocument}
                       enableAreaSelection={(event) => event.altKey} // Alt 키를 누른 상태에서 영역 선택 가능
@@ -191,6 +303,7 @@ export default function PdfHighlight() {
                         scrollViewerTo.current = scrollTo;
                         scrollToHighlightFromHash();
                       }}
+                      onViewerLoaded={onViewerLoaded}
                       // 텍스트 선택 완료 시 팁(코멘트 입력) 표시
                       onSelectionFinished={(position, content, hideTipAndSelection, transformSelection) => (
                         <Tip

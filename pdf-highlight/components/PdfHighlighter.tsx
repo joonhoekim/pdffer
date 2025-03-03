@@ -57,6 +57,7 @@ interface State<T_HT> {
 // onSelectionFinished: 선택 완료 시 호출되는 콜백
 // enableAreaSelection: 영역 선택 활성화 여부를 결정하는 함수
 // pdfViewerOptions: PDF.js 뷰어 옵션
+// onViewerLoaded: 뷰어 로드 완료 시 호출되는 콜백
 interface Props<T_HT> {
   highlightTransform: (
     highlight: T_ViewportHighlight<T_HT>,
@@ -75,6 +76,7 @@ interface Props<T_HT> {
   onSelectionFinished: (position: ScaledPosition, content: { text?: string; image?: string }, hideTipAndSelection: () => void, transformSelection: () => void) => React.ReactElement | null;
   enableAreaSelection: (event: MouseEvent) => boolean;
   pdfViewerOptions?: PDFViewerOptions;
+  onViewerLoaded?: (viewer: PDFViewer) => void;
 }
 
 // (상수) 빈 아이디
@@ -189,7 +191,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<Props
   // PDF.js 라이브러리 로드 및 뷰어 설정
   // 이벤트 버스와 링크 서비스 설정
   async init() {
-    const { pdfDocument, pdfViewerOptions } = this.props;
+    const { pdfDocument, pdfViewerOptions, onViewerLoaded } = this.props;
     const pdfjs = await import("pdfjs-dist/web/pdf_viewer.mjs");
 
     const eventBus = new pdfjs.EventBus();
@@ -217,6 +219,11 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<Props
     linkService.setDocument(pdfDocument);
     linkService.setViewer(this.viewer);
     this.viewer.setDocument(pdfDocument);
+
+    // 뷰어 로드 완료 시 콜백 호출
+    if (onViewerLoaded) {
+      onViewerLoaded(this.viewer);
+    }
 
     this.attachRef(eventBus);
   }

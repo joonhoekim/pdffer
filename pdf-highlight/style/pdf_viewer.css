@@ -1,5 +1,17 @@
 /* overrides for pdf_viewer.css from PDF.JS web viewer */
 
+.pdfViewer .dummyPage {
+  height: 100% !important; /* 계산식 사용 */
+}
+
+.pdfViewer {
+  height: 100%;
+}
+
+#viewerContainer {
+  height: 100%;
+}
+
 .textLayer {
   z-index: 2;
   opacity: 1;
@@ -50,3 +62,4 @@ html
     opacity: 0.5;
   }
 }
+

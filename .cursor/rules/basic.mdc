@@ -1,6 +1,12 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
 stack:
 Nextjs 15 project
 shadcn-ui (already installed)
 drizzle
+bun
 
 CLI: bash latest
