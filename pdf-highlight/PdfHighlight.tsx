@@ -69,8 +69,8 @@ export default function PdfHighlight() {
   // PDF 뷰어 참조
   const viewerRef = useRef<any>(null);
 
-  // 스케일 값 변경을 디바운스 처리
-  const debouncedScaleValue = useCallback(() => {
+  // 스케일 값 변경 처리
+  const handleScaleValue = useCallback(() => {
     if (!viewerRef.current) return;
 
     // spread mode 유지
@@ -83,22 +83,17 @@ export default function PdfHighlight() {
       // 맞춤 모드에서는 해당 모드 적용
       viewerRef.current.currentScaleValue = scaleMode;
       // 모드 적용 후 현재 배율 업데이트
-      setCurrentScale(viewerRef.current.currentScale);
+      const newScale = viewerRef.current.currentScale;
+      if (newScale !== currentScale) {
+        setCurrentScale(newScale);
+      }
     }
   }, [scaleMode, currentScale, spreadMode]);
 
   // resize 이벤트 리스너 등록
   useEffect(() => {
     const resizeObserver = new ResizeObserver(() => {
-      if (!viewerRef.current) return;
-      
-      const prevScale = viewerRef.current.currentScale;
-      debouncedScaleValue();
-      
-      // 배율이 변경되었다면 상태 업데이트
-      if (prevScale !== viewerRef.current.currentScale) {
-        setCurrentScale(viewerRef.current.currentScale);
-      }
+      handleScaleValue();
     });
 
     if (viewerRef.current?.container) {
@@ -108,7 +103,7 @@ export default function PdfHighlight() {
     return () => {
       resizeObserver.disconnect();
     };
-  }, [debouncedScaleValue]);
+  }, [handleScaleValue]);
 
   // 확대/축소 및 보기 맞춤 메서드
   const zoomIn = useCallback(() => {
@@ -133,25 +128,34 @@ export default function PdfHighlight() {
     if (viewerRef.current) {
       setScaleMode('page-fit');
       viewerRef.current.currentScaleValue = 'page-fit';
-      setCurrentScale(viewerRef.current.currentScale);
+      const newScale = viewerRef.current.currentScale;
+      if (newScale !== currentScale) {
+        setCurrentScale(newScale);
+      }
     }
-  }, []);
+  }, [currentScale]);
 
   const setPageWidthFit = useCallback(() => {
     if (viewerRef.current) {
       setScaleMode('page-width');
       viewerRef.current.currentScaleValue = 'page-width';
-      setCurrentScale(viewerRef.current.currentScale);
+      const newScale = viewerRef.current.currentScale;
+      if (newScale !== currentScale) {
+        setCurrentScale(newScale);
+      }
     }
-  }, []);
+  }, [currentScale]);
 
   const setPageHeightFit = useCallback(() => {
     if (viewerRef.current) {
       setScaleMode('page-height');
       viewerRef.current.currentScaleValue = 'page-height';
-      setCurrentScale(viewerRef.current.currentScale);
+      const newScale = viewerRef.current.currentScale;
+      if (newScale !== currentScale) {
+        setCurrentScale(newScale);
+      }
     }
-  }, []);
+  }, [currentScale]);
 
   const setTwoPageView = useCallback(() => {
     if (viewerRef.current) {
@@ -303,16 +307,16 @@ export default function PdfHighlight() {
             <ZoomOut className="h-4 w-4" />
           </Button>
           <Separator orientation="vertical" className="h-6" />
-          <Button variant="outline" size="icon" onClick={setPageFit}>
+          <Button variant={scaleMode === 'page-fit' ? "secondary" : "outline"} size="icon" onClick={setPageFit}>
             <Maximize className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="icon" onClick={setPageWidthFit}>
+          <Button variant={scaleMode === 'page-width' ? "secondary" : "outline"} size="icon" onClick={setPageWidthFit}>
             <ArrowLeftRight className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="icon" onClick={setPageHeightFit}>
+          <Button variant={scaleMode === 'page-height' ? "secondary" : "outline"} size="icon" onClick={setPageHeightFit}>
             <ArrowUpDown className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="icon" onClick={setTwoPageView}>
+          <Button variant={spreadMode === 1 ? "secondary" : "outline"} size="icon" onClick={setTwoPageView}>
             <Columns className="h-4 w-4" />
           </Button>
           <Separator orientation="vertical" className="h-6" />

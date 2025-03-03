@@ -16,24 +16,17 @@ const APP_VERSION = "1.0.0";
 
 export function Sidebar({ highlights, toggleDocument, resetHighlights }: Props) {
   return (
-    <div className="sidebar" style={{ width: "25vw" }}>
+    <div className="sidebar">
       <div className="description" style={{ padding: "1rem" }}>
-        <h2 style={{ marginBottom: "1rem" }}>react-pdf-highlighter {APP_VERSION}</h2>
-
-        <p style={{ fontSize: "0.7rem" }}>
-          <a href="https://github.com/agentcooper/react-pdf-highlighter">Open in GitHub</a>
-        </p>
-
         <p>
-          <small>To create area highlight hold ⌥ Option key (Alt), then click and drag.</small>
+          <small>Alt 키 누르고 드래그 : 영역 하이라이트</small>
         </p>
       </div>
 
       <ul className="sidebar__highlights">
         {highlights.map((highlight, index) => (
           <li
-            // biome-ignore lint/suspicious/noArrayIndexKey: This is an example app
-            key={index}
+            key={highlight.id}
             className="sidebar__highlight"
             onClick={() => {
               updateHash(highlight);
