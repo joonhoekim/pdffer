@@ -21,16 +21,16 @@ interface HighlightLayerProps<T_HT> {
   highlightTransform: (
     highlight: T_ViewportHighlight<T_HT>, // 뷰포트 좌표계의 하이라이트
     index: number, // 하이라이트 인덱스
-    setTip: (highlight: T_ViewportHighlight<T_HT>, callback: (highlight: T_ViewportHighlight<T_HT>) => JSX.Element) => void, // 팁 설정 함수
+    setTip: (highlight: T_ViewportHighlight<T_HT>, callback: (highlight: T_ViewportHighlight<T_HT>) => React.ReactElement) => void, // 팁 설정 함수
     hideTip: () => void, // 팁 숨김 함수
     viewportToScaled: (rect: LTWHP) => Scaled, // 좌표계 변환 함수
     screenshot: (position: LTWH) => string, // 스크린샷 생성 함수
     isScrolledTo: boolean, // 스크롤 상태
-  ) => JSX.Element;
+  ) => React.ReactElement;
   // 현재 표시 중인 팁 정보
   tip: {
     highlight: T_ViewportHighlight<T_HT>; // 팁이 표시될 하이라이트
-    callback: (highlight: T_ViewportHighlight<T_HT>) => JSX.Element; // 팁 컨텐츠 생성 함수
+    callback: (highlight: T_ViewportHighlight<T_HT>) => React.ReactElement; // 팁 컨텐츠 생성 함수
   } | null;
   // 좌표계 변환 함수들
   scaledPositionToViewport: (scaledPosition: ScaledPosition) => Position;
@@ -41,10 +41,10 @@ interface HighlightLayerProps<T_HT> {
   // 스크린샷 관련 함수
   screenshot: (position: LTWH, pageNumber: number) => string;
   // 팁 표시/설정 함수들
-  showTip: (highlight: T_ViewportHighlight<T_HT>, content: JSX.Element) => void;
+  showTip: (highlight: T_ViewportHighlight<T_HT>, content: React.ReactElement) => void;
   setTip: (state: {
     highlight: T_ViewportHighlight<T_HT>;
-    callback: (highlight: T_ViewportHighlight<T_HT>) => JSX.Element;
+    callback: (highlight: T_ViewportHighlight<T_HT>) => React.ReactElement;
   }) => void;
 }
 

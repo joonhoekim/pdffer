@@ -39,10 +39,10 @@ interface State<T_HT> {
   range: Range | null;
   tip: {
     highlight: T_ViewportHighlight<T_HT>;
-    callback: (highlight: T_ViewportHighlight<T_HT>) => JSX.Element;
+    callback: (highlight: T_ViewportHighlight<T_HT>) => React.ReactElement;
   } | null;
   tipPosition: Position | null;
-  tipChildren: JSX.Element | null;
+  tipChildren: React.ReactElement | null;
   isAreaSelectionInProgress: boolean;
   scrolledToHighlightId: string;
 }
@@ -61,18 +61,18 @@ interface Props<T_HT> {
   highlightTransform: (
     highlight: T_ViewportHighlight<T_HT>,
     index: number,
-    setTip: (highlight: T_ViewportHighlight<T_HT>, callback: (highlight: T_ViewportHighlight<T_HT>) => JSX.Element) => void,
+    setTip: (highlight: T_ViewportHighlight<T_HT>, callback: (highlight: T_ViewportHighlight<T_HT>) => React.ReactElement) => void,
     hideTip: () => void,
     viewportToScaled: (rect: LTWHP) => Scaled,
     screenshot: (position: LTWH) => string,
     isScrolledTo: boolean,
-  ) => JSX.Element;
+  ) => React.ReactElement;
   highlights: Array<T_HT>;
   onScrollChange: () => void;
   scrollRef: (scrollTo: (highlight: T_HT) => void) => void;
   pdfDocument: PDFDocumentProxy;
   pdfScaleValue: string;
-  onSelectionFinished: (position: ScaledPosition, content: { text?: string; image?: string }, hideTipAndSelection: () => void, transformSelection: () => void) => JSX.Element | null;
+  onSelectionFinished: (position: ScaledPosition, content: { text?: string; image?: string }, hideTipAndSelection: () => void, transformSelection: () => void) => React.ReactElement | null;
   enableAreaSelection: (event: MouseEvent) => boolean;
   pdfViewerOptions?: PDFViewerOptions;
 }
@@ -115,7 +115,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<Props
 
   // 컨테이너 div에 대한 React ref
   // React의 가상 DOM과 실제 DOM을 연결하는 역할
-  containerNodeRef: RefObject<HTMLDivElement>;
+  containerNodeRef: RefObject<HTMLDivElement | null>;
 
   // 페이지별 하이라이트 레이어의 React root와 컨테이너 요소를 관리
   // 각 PDF 페이지마다 별도의 하이라이트 레이어를 생성하고 관리
@@ -290,7 +290,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<Props
 
   // 하이라이트에 대한 팁(툴팁) 표시
   // 현재 선택 또는 영역 선택 중이 아닐 때만 팁 표시
-  showTip(highlight: T_ViewportHighlight<T_HT>, content: JSX.Element) {
+  showTip(highlight: T_ViewportHighlight<T_HT>, content: React.ReactElement) {
     const { isCollapsed, ghostHighlight, isAreaSelectionInProgress } = this.state;
 
     const highlightInProgress = !isCollapsed || ghostHighlight;
@@ -346,7 +346,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<Props
   };
 
   // 팁의 위치와 내용을 설정
-  setTip(position: Position, inner: JSX.Element | null) {
+  setTip(position: Position, inner: React.ReactElement | null) {
     this.setState({
       tipPosition: position,
       tipChildren: inner,

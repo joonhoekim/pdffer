@@ -10,13 +10,13 @@ import { MouseMonitor } from "./MouseMonitor";
 interface Props {
   // 마우스 오버 시 호출될 콜백 함수
   // JSX.Element: React 요소를 나타내는 타입
-  onMouseOver: (content: JSX.Element) => void;
+  onMouseOver: (content: React.ReactElement) => void;
   // 팝업에 표시될 실제 콘텐츠
-  popupContent: JSX.Element;
+  popupContent: React.ReactElement;
   // 마우스가 영역을 벗어날 때 호출될 콜백 함수
   onMouseOut: () => void;
   // 팝업을 트리거할 자식 컴포넌트
-  children: JSX.Element;
+  children: React.ReactElement;
 }
 
 export function Popup({ onMouseOver, popupContent, onMouseOut, children }: Props) {

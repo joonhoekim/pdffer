@@ -16,7 +16,7 @@ interface Props {
   paddingY: number;
   // 감시할 자식 컴포넌트
   // React.ReactElement 타입이지만 JSX.Element로도 표현 가능
-  children: JSX.Element;
+  children: React.ReactElement;
 }
 
 // MouseMonitor 클래스 컴포넌트

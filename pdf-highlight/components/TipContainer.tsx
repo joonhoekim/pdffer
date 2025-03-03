@@ -5,10 +5,18 @@ import styles from "../style/TipContainer.module.css";
 import type { LTWHP } from "../types";
 
 interface Props {
-  children: JSX.Element | null;
+  children: React.ReactElement | null;
   style: { top: number; left: number; bottom: number };
   scrollTop: number;
   pageBoundingRect: LTWHP;
+}
+
+// Define the expected props for child components
+interface ChildProps {
+  onUpdate?: () => void;
+  popup?: {
+    position: "below" | "above";
+  };
 }
 
 function clamp(value: number, left: number, right: number) {
@@ -49,7 +57,7 @@ export function TipContainer({ children, style, scrollTop, pageBoundingRect }: P
 
   const childrenWithProps = React.Children.map(children, (child) =>
     child != null
-      ? React.cloneElement(child, {
+      ? React.cloneElement(child as React.ReactElement<ChildProps>, {
           onUpdate: handleUpdate,
           popup: {
             position: shouldMove ? "below" : "above",
