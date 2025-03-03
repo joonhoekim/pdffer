@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: isDev,
   },
+  reactStrictMode: false,
 
   // pdfjs-dist 패키지 내부 구성요소를 직접 사용하려고 함
   webpack: (config) => {

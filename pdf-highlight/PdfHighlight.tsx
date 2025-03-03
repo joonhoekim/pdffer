@@ -12,7 +12,7 @@ import { testHighlights as _testHighlights } from "./test-highlights";
 // nextjs default config doew not allow import node_modules files directly
 // import "react-pdf-highlighter/dist/style.css";
 
-// import "./style/App.css";
+import "./style/App.css";
 // import "./style/style.css";
 
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
@@ -47,8 +47,8 @@ const HighlightPopup = ({
   ) : null;
 
 // 기본 PDF URL 설정
-// const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021";
-const PRIMARY_PDF_URL = "/pdf-example/test-big.pdf";
+const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021";
+// const PRIMARY_PDF_URL = "/pdf-example/test-big.pdf";
 const SECONDARY_PDF_URL = "https://arxiv.org/pdf/1604.02480";
 
 export default function PdfHighlight() {
@@ -176,52 +176,56 @@ export default function PdfHighlight() {
 
         {/* PDF 뷰어 - 문서 표시 및 하이라이트 기능 */}
         <ResizablePanel defaultSize={showLeftSidebar && showRightSidebar ? 60 : 100}>
-          <div className="h-full relative">
-            <div className="absolute inset-0 overflow-auto">
-              <PdfLoader url={url} beforeLoad={<Spinner />} workerSrc="https://unpkg.com/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs">
+          <div className="h-full w-full relative">
+            {/* PDF 뷰어 컨테이너 - position: relative로 설정하여 PDF.js 컨테이너의 부모 역할 */}
+            <div className="absolute inset-0">
+              {/* pdf-js 워커 주소를 별도로 지정하려면 아래에서 workSrc 프롭을 넣어줄 것. 기본값은 pdfjs-dist 버전과 동일한 워커를 CDN으로 가져옴 */}
+              <PdfLoader url={url} beforeLoad={<Spinner />}>
                 {(pdfDocument) => (
-                  <PdfHighlighter
-                    pdfDocument={pdfDocument}
-                    enableAreaSelection={(event) => event.altKey} // Alt 키를 누른 상태에서 영역 선택 가능
-                    onScrollChange={resetHash}
-                    scrollRef={(scrollTo) => {
-                      scrollViewerTo.current = scrollTo;
-                      scrollToHighlightFromHash();
-                    }}
-                    // 텍스트 선택 완료 시 팁(코멘트 입력) 표시
-                    onSelectionFinished={(position, content, hideTipAndSelection, transformSelection) => (
-                      <Tip
-                        onOpen={transformSelection}
-                        onConfirm={(comment) => {
-                          addHighlight({ content, position, comment });
-                          hideTipAndSelection();
-                        }}
-                      />
-                    )}
-                    // 하이라이트 렌더링 변환 함수
-                    highlightTransform={(highlight, index, setTip, hideTip, viewportToScaled, screenshot, isScrolledTo) => {
-                      const isTextHighlight = !highlight.content?.image;
-
-                      const component = isTextHighlight ? (
-                        <Highlight isScrolledTo={isScrolledTo} position={highlight.position} comment={highlight.comment} />
-                      ) : (
-                        <AreaHighlight
-                          isScrolledTo={isScrolledTo}
-                          highlight={highlight}
-                          onChange={(boundingRect) => {
-                            updateHighlight(highlight.id, { boundingRect: viewportToScaled(boundingRect) }, { image: screenshot(boundingRect) });
+                  <div className="relative w-full h-full" style={{ position: "relative" }}>
+                    <PdfHighlighter
+                      pdfDocument={pdfDocument}
+                      enableAreaSelection={(event) => event.altKey} // Alt 키를 누른 상태에서 영역 선택 가능
+                      onScrollChange={resetHash}
+                      scrollRef={(scrollTo) => {
+                        scrollViewerTo.current = scrollTo;
+                        scrollToHighlightFromHash();
+                      }}
+                      // 텍스트 선택 완료 시 팁(코멘트 입력) 표시
+                      onSelectionFinished={(position, content, hideTipAndSelection, transformSelection) => (
+                        <Tip
+                          onOpen={transformSelection}
+                          onConfirm={(comment) => {
+                            addHighlight({ content, position, comment });
+                            hideTipAndSelection();
                           }}
                         />
-                      );
+                      )}
+                      // 하이라이트 렌더링 변환 함수
+                      highlightTransform={(highlight, index, setTip, hideTip, viewportToScaled, screenshot, isScrolledTo) => {
+                        const isTextHighlight = !highlight.content?.image;
 
-                      return (
-                        <Popup popupContent={<HighlightPopup {...highlight} />} onMouseOver={(popupContent) => setTip(highlight, () => popupContent)} onMouseOut={hideTip} key={index}>
-                          {component}
-                        </Popup>
-                      );
-                    }}
-                    highlights={highlights}
-                  />
+                        const component = isTextHighlight ? (
+                          <Highlight isScrolledTo={isScrolledTo} position={highlight.position} comment={highlight.comment} />
+                        ) : (
+                          <AreaHighlight
+                            isScrolledTo={isScrolledTo}
+                            highlight={highlight}
+                            onChange={(boundingRect) => {
+                              updateHighlight(highlight.id, { boundingRect: viewportToScaled(boundingRect) }, { image: screenshot(boundingRect) });
+                            }}
+                          />
+                        );
+
+                        return (
+                          <Popup popupContent={<HighlightPopup {...highlight} />} onMouseOver={(popupContent) => setTip(highlight, () => popupContent)} onMouseOut={hideTip} key={index}>
+                            {component}
+                          </Popup>
+                        );
+                      }}
+                      highlights={highlights}
+                    />
+                  </div>
                 )}
               </PdfLoader>
             </div>
@@ -244,7 +248,9 @@ export default function PdfHighlight() {
                     </div>
                     <Separator />
                     <h3 className="text-lg font-semibold">Notes</h3>
-                    <div className="text-sm text-muted-foreground">No notes yet</div>
+                    <div className="space-y-2">
+                      <p className="text-sm">No notes yet.</p>
+                    </div>
                   </div>
                 </ScrollArea>
               </div>

@@ -668,12 +668,27 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<Props
       } else {
         const highlightLayer = this.findOrCreateHighlightLayer(pageNumber);
         if (highlightLayer) {
-          const reactRoot = createRoot(highlightLayer);
-          this.highlightRoots[pageNumber] = {
-            reactRoot,
-            container: highlightLayer,
-          };
-          this.renderHighlightLayer(reactRoot, pageNumber);
+          // Check if we already have a root for this layer in a different page
+          let existingRoot = false;
+          for (const [, root] of Object.entries(this.highlightRoots)) {
+            if (root.container === highlightLayer) {
+              // Use the existing root instead of creating a new one
+              this.highlightRoots[pageNumber] = root;
+              this.renderHighlightLayer(root.reactRoot, pageNumber);
+              existingRoot = true;
+              break;
+            }
+          }
+
+          // Only create a new root if we didn't find an existing one
+          if (!existingRoot) {
+            const reactRoot = createRoot(highlightLayer);
+            this.highlightRoots[pageNumber] = {
+              reactRoot,
+              container: highlightLayer,
+            };
+            this.renderHighlightLayer(reactRoot, pageNumber);
+          }
         }
       }
     }
