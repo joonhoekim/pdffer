@@ -20,7 +20,7 @@ import { TipContainer } from "./TipContainer";
 // PDF 뷰어 옵션 확장
 interface ExtendedPDFViewerOptions extends PDFViewerOptions {
   spreadMode?: number;
-  scaleMode?: string;
+  scaleMode?: 'auto' | 'page-width' | 'page-height';
   defaultScale?: number;
 }
 
@@ -79,7 +79,7 @@ interface Props<T_HT> {
   onScrollChange: () => void;
   scrollRef: (scrollTo: (highlight: T_HT) => void) => void;
   pdfDocument: PDFDocumentProxy;
-  pdfScaleValue: string;
+  pdfScaleValue: 'auto' | 'page-width' | 'page-height';
   onSelectionFinished: (position: ScaledPosition, content: { text?: string; image?: string }, hideTipAndSelection: () => void, transformSelection: () => void) => React.ReactElement | null;
   enableAreaSelection: (event: MouseEvent) => boolean;
   pdfViewerOptions?: ExtendedPDFViewerOptions;
@@ -229,14 +229,27 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<Props
 
     // 초기 설정 적용
     if (pdfViewerOptions) {
-      if (pdfViewerOptions.spreadMode !== undefined) {
-        this.viewer.spreadMode = pdfViewerOptions.spreadMode;
-      }
-      if (pdfViewerOptions.defaultScale !== undefined) {
-        this.viewer.currentScale = pdfViewerOptions.defaultScale;
-      } else if (pdfViewerOptions.scaleMode !== undefined) {
-        this.viewer.currentScaleValue = pdfViewerOptions.scaleMode;
-      }
+      const { spreadMode, defaultScale, scaleMode } = pdfViewerOptions;
+      
+      // PDF.js의 내부 이벤트를 활용하여 설정 적용
+      eventBus.on('pagesloaded', () => {
+        // spreadMode 설정
+        if (spreadMode !== undefined) {
+          this.viewer.spreadMode = spreadMode;
+        }
+
+        // scale 설정을 spreadMode 적용 후 다음 프레임에서 실행
+        requestAnimationFrame(() => {
+          if (defaultScale !== undefined) {
+            this.viewer.currentScale = defaultScale;
+          } else if (scaleMode !== undefined) {
+            this.viewer.currentScaleValue = scaleMode;
+          }
+          
+          // 강제로 페이지 크기 재계산 트리거
+          this.viewer.update();
+        });
+      });
     }
 
     // 뷰어 로드 완료 시 콜백 호출

@@ -21,6 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Search, ZoomIn, ZoomOut, RotateCw, Download, PanelLeftClose, PanelRightClose, Maximize, ArrowLeftRight, ArrowUpDown, Columns } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 const testHighlights: Record<string, Array<IHighlight>> = _testHighlights;
 
@@ -62,7 +63,7 @@ export default function PdfHighlight() {
   const [highlights, setHighlights] = useState<Array<IHighlight>>(testHighlights[initialUrl] ? [...testHighlights[initialUrl]] : []); // 하이라이트 목록
   const [showLeftSidebar, setShowLeftSidebar] = useState(true); // 왼쪽 사이드바 표시 여부
   const [showRightSidebar, setShowRightSidebar] = useState(true); // 오른쪽 사이드바 표시 여부
-  const [scaleMode, setScaleMode] = useState<'auto' | 'page-fit' | 'page-width' | 'page-height'>('page-fit'); // PDF 스케일 모드
+  const [scaleMode, setScaleMode] = useState<'auto' | 'page-width' | 'page-height'>('auto'); // PDF 스케일 모드
   const [currentScale, setCurrentScale] = useState<number>(1); // 현재 배율
   const [spreadMode, setSpreadMode] = useState<0 | 1>(0); // 0: 한 쪽 보기, 1: 두 쪽 보기
   
@@ -126,8 +127,9 @@ export default function PdfHighlight() {
 
   const setPageFit = useCallback(() => {
     if (viewerRef.current) {
-      setScaleMode('page-fit');
-      viewerRef.current.currentScaleValue = 'page-fit';
+      setScaleMode('auto');
+      // PDF가 화면에 맞게 자동으로 조정되도록 함
+      viewerRef.current.currentScaleValue = 'auto';
       const newScale = viewerRef.current.currentScale;
       if (newScale !== currentScale) {
         setCurrentScale(newScale);
@@ -238,7 +240,7 @@ export default function PdfHighlight() {
     if (highlight) {
       scrollViewerTo.current(highlight);
     }
-  }, []);
+  }, [highlights]);
 
   // 해시 변경 이벤트 리스너 등록
   useEffect(() => {
@@ -256,7 +258,11 @@ export default function PdfHighlight() {
   // 새로운 하이라이트를 추가하는 함수
   const addHighlight = (highlight: NewHighlight) => {
     console.log("Saving highlight", highlight);
-    setHighlights((prevHighlights) => [{ ...highlight, id: getNextId() }, ...prevHighlights]);
+    const newHighlight = { ...highlight, id: getNextId() };
+    setHighlights((prevHighlights) => [newHighlight, ...prevHighlights]);
+    
+    // 새로 추가된 하이라이트로 스크롤
+    document.location.hash = `highlight-${newHighlight.id}`;
     
     // 하이라이트 추가 후 현재 설정 유지
     if (viewerRef.current) {
@@ -306,8 +312,35 @@ export default function PdfHighlight() {
           <Button variant="outline" size="icon" onClick={zoomOut}>
             <ZoomOut className="h-4 w-4" />
           </Button>
+          <div className="flex items-center gap-1">
+            <div className="relative w-20">
+              <Input
+                type="number"
+                min="25"
+                max="500"
+                step="5"
+                value={Math.round(currentScale * 100)}
+                onChange={(e) => {
+                  const newScale = Number(e.target.value) / 100;
+                  if (!isNaN(newScale) && newScale >= 0.25 && newScale <= 5) {
+                    if (viewerRef.current) {
+                      requestAnimationFrame(() => {
+                        setScaleMode('auto');
+                        viewerRef.current.currentScale = newScale;
+                        setCurrentScale(newScale);
+                      });
+                    }
+                  }
+                }}
+                className="pr-7 text-right"
+              />
+              <span className="absolute inset-y-0 right-2 flex items-center pointer-events-none text-muted-foreground text-sm">
+                %
+              </span>
+            </div>
+          </div>
           <Separator orientation="vertical" className="h-6" />
-          <Button variant={scaleMode === 'page-fit' ? "secondary" : "outline"} size="icon" onClick={setPageFit}>
+          <Button variant={scaleMode === 'auto' ? "secondary" : "outline"} size="icon" onClick={setPageFit}>
             <Maximize className="h-4 w-4" />
           </Button>
           <Button variant={scaleMode === 'page-width' ? "secondary" : "outline"} size="icon" onClick={setPageWidthFit}>
