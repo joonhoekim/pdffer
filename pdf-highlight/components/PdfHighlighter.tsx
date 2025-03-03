@@ -17,6 +17,13 @@ import { HighlightLayer } from "./HighlightLayer";
 import { MouseSelection } from "./MouseSelection";
 import { TipContainer } from "./TipContainer";
 
+// PDF 뷰어 옵션 확장
+interface ExtendedPDFViewerOptions extends PDFViewerOptions {
+  spreadMode?: number;
+  scaleMode?: string;
+  defaultScale?: number;
+}
+
 // (인터섹션 타입) 제네릭으로 받는 T_HT라는 타입에 position을 추가하라는 의미
 // T_HT는 IHighlight를 확장한 타입으로, 사용자가 정의한 하이라이트 타입
 export type T_ViewportHighlight<T_HT> = { position: Position } & T_HT;
@@ -75,7 +82,7 @@ interface Props<T_HT> {
   pdfScaleValue: string;
   onSelectionFinished: (position: ScaledPosition, content: { text?: string; image?: string }, hideTipAndSelection: () => void, transformSelection: () => void) => React.ReactElement | null;
   enableAreaSelection: (event: MouseEvent) => boolean;
-  pdfViewerOptions?: PDFViewerOptions;
+  pdfViewerOptions?: ExtendedPDFViewerOptions;
   onViewerLoaded?: (viewer: PDFViewer) => void;
 }
 
@@ -219,6 +226,18 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<Props
     linkService.setDocument(pdfDocument);
     linkService.setViewer(this.viewer);
     this.viewer.setDocument(pdfDocument);
+
+    // 초기 설정 적용
+    if (pdfViewerOptions) {
+      if (pdfViewerOptions.spreadMode !== undefined) {
+        this.viewer.spreadMode = pdfViewerOptions.spreadMode;
+      }
+      if (pdfViewerOptions.defaultScale !== undefined) {
+        this.viewer.currentScale = pdfViewerOptions.defaultScale;
+      } else if (pdfViewerOptions.scaleMode !== undefined) {
+        this.viewer.currentScaleValue = pdfViewerOptions.scaleMode;
+      }
+    }
 
     // 뷰어 로드 완료 시 콜백 호출
     if (onViewerLoaded) {

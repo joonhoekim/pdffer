@@ -62,49 +62,102 @@ export default function PdfHighlight() {
   const [highlights, setHighlights] = useState<Array<IHighlight>>(testHighlights[initialUrl] ? [...testHighlights[initialUrl]] : []); // 하이라이트 목록
   const [showLeftSidebar, setShowLeftSidebar] = useState(true); // 왼쪽 사이드바 표시 여부
   const [showRightSidebar, setShowRightSidebar] = useState(true); // 오른쪽 사이드바 표시 여부
+  const [scaleMode, setScaleMode] = useState<'auto' | 'page-fit' | 'page-width' | 'page-height'>('page-fit'); // PDF 스케일 모드
+  const [currentScale, setCurrentScale] = useState<number>(1); // 현재 배율
+  const [spreadMode, setSpreadMode] = useState<0 | 1>(0); // 0: 한 쪽 보기, 1: 두 쪽 보기
   
   // PDF 뷰어 참조
   const viewerRef = useRef<any>(null);
 
+  // 스케일 값 변경을 디바운스 처리
+  const debouncedScaleValue = useCallback(() => {
+    if (!viewerRef.current) return;
+
+    // spread mode 유지
+    viewerRef.current.spreadMode = spreadMode;
+
+    if (scaleMode === 'auto') {
+      // auto 모드에서는 현재 배율 유지
+      viewerRef.current.currentScale = currentScale;
+    } else {
+      // 맞춤 모드에서는 해당 모드 적용
+      viewerRef.current.currentScaleValue = scaleMode;
+      // 모드 적용 후 현재 배율 업데이트
+      setCurrentScale(viewerRef.current.currentScale);
+    }
+  }, [scaleMode, currentScale, spreadMode]);
+
+  // resize 이벤트 리스너 등록
+  useEffect(() => {
+    const resizeObserver = new ResizeObserver(() => {
+      if (!viewerRef.current) return;
+      
+      const prevScale = viewerRef.current.currentScale;
+      debouncedScaleValue();
+      
+      // 배율이 변경되었다면 상태 업데이트
+      if (prevScale !== viewerRef.current.currentScale) {
+        setCurrentScale(viewerRef.current.currentScale);
+      }
+    });
+
+    if (viewerRef.current?.container) {
+      resizeObserver.observe(viewerRef.current.container);
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [debouncedScaleValue]);
+
   // 확대/축소 및 보기 맞춤 메서드
   const zoomIn = useCallback(() => {
     if (viewerRef.current) {
-      let newScale = viewerRef.current.currentScale;
-      newScale = (newScale * 1.1).toFixed(2);
-      viewerRef.current.currentScale = Number(newScale);
+      setScaleMode('auto');  // 수동 확대/축소 시 auto 모드로 전환
+      const newScale = Number((viewerRef.current.currentScale * 1.1).toFixed(2));
+      viewerRef.current.currentScale = newScale;
+      setCurrentScale(newScale);
     }
   }, []);
 
   const zoomOut = useCallback(() => {
     if (viewerRef.current) {
-      let newScale = viewerRef.current.currentScale;
-      newScale = (newScale / 1.1).toFixed(2);
-      viewerRef.current.currentScale = Number(newScale);
+      setScaleMode('auto');  // 수동 확대/축소 시 auto 모드로 전환
+      const newScale = Number((viewerRef.current.currentScale / 1.1).toFixed(2));
+      viewerRef.current.currentScale = newScale;
+      setCurrentScale(newScale);
     }
   }, []);
 
   const setPageFit = useCallback(() => {
     if (viewerRef.current) {
+      setScaleMode('page-fit');
       viewerRef.current.currentScaleValue = 'page-fit';
+      setCurrentScale(viewerRef.current.currentScale);
     }
   }, []);
 
   const setPageWidthFit = useCallback(() => {
     if (viewerRef.current) {
+      setScaleMode('page-width');
       viewerRef.current.currentScaleValue = 'page-width';
+      setCurrentScale(viewerRef.current.currentScale);
     }
   }, []);
 
   const setPageHeightFit = useCallback(() => {
     if (viewerRef.current) {
+      setScaleMode('page-height');
       viewerRef.current.currentScaleValue = 'page-height';
+      setCurrentScale(viewerRef.current.currentScale);
     }
   }, []);
 
   const setTwoPageView = useCallback(() => {
     if (viewerRef.current) {
-      const currentMode = viewerRef.current.spreadMode;
-      viewerRef.current.spreadMode = currentMode === 0 ? 1 : 0;
+      const newMode = viewerRef.current.spreadMode === 0 ? 1 : 0;
+      viewerRef.current.spreadMode = newMode;
+      setSpreadMode(newMode);
     }
   }, []);
 
@@ -156,7 +209,9 @@ export default function PdfHighlight() {
   // PDF 뷰어 참조 설정
   const onViewerLoaded = useCallback((viewer: any) => {
     viewerRef.current = viewer;
-  }, []);
+    // 초기 spread mode 설정
+    viewer.spreadMode = spreadMode;
+  }, [spreadMode]);
 
   // 모든 하이라이트를 초기화하는 함수
   const resetHighlights = () => {
@@ -198,6 +253,19 @@ export default function PdfHighlight() {
   const addHighlight = (highlight: NewHighlight) => {
     console.log("Saving highlight", highlight);
     setHighlights((prevHighlights) => [{ ...highlight, id: getNextId() }, ...prevHighlights]);
+    
+    // 하이라이트 추가 후 현재 설정 유지
+    if (viewerRef.current) {
+      // spread mode 유지
+      viewerRef.current.spreadMode = spreadMode;
+      
+      // scale mode 유지
+      if (scaleMode === 'auto') {
+        viewerRef.current.currentScale = currentScale;
+      } else {
+        viewerRef.current.currentScaleValue = scaleMode;
+      }
+    }
   };
 
   // 기존 하이라이트를 업데이트하는 함수
@@ -216,12 +284,6 @@ export default function PdfHighlight() {
           : h;
       }),
     );
-  };
-
-  // 스케일 값 변경을 디바운스 처리
-  // 연속적인 크기 조정을 최적화하기 위해 500ms 딜레이 적용
-  const debouncedScaleValue: () => void = () => {
-    // Implementation of debounce function
   };
 
   return (
@@ -304,6 +366,11 @@ export default function PdfHighlight() {
                         scrollToHighlightFromHash();
                       }}
                       onViewerLoaded={onViewerLoaded}
+                      pdfViewerOptions={{
+                        spreadMode: spreadMode,
+                        scaleMode: scaleMode,
+                        defaultScale: currentScale,
+                      }}
                       // 텍스트 선택 완료 시 팁(코멘트 입력) 표시
                       onSelectionFinished={(position, content, hideTipAndSelection, transformSelection) => (
                         <Tip
