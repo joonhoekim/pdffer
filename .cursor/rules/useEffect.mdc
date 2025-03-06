@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+Ignore useEffect linter warning like `This hook specifies more dependencies than necessary` to avoid infinite rendering loop problem.

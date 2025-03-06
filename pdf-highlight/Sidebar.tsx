@@ -1,6 +1,10 @@
 "use client";
 
 import type { IHighlight } from "./index";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 
 interface Props {
   highlights: Array<IHighlight>;
@@ -12,50 +16,52 @@ const updateHash = (highlight: IHighlight) => {
   document.location.hash = `highlight-${highlight.id}`;
 };
 
-const APP_VERSION = "1.0.0";
-
 export function Sidebar({ highlights, toggleDocument, resetHighlights }: Props) {
   return (
-    <div className="sidebar">
-      <div className="description" style={{ padding: "1rem" }}>
-        <p>
-          <small>Alt 키 누르고 드래그 : 영역 하이라이트</small>
+    <div className="h-full overflow-auto bg-background text-foreground border-r">
+      <div className="p-4">
+        <p className="text-sm text-muted-foreground">
+          <span className="font-medium">Alt 키 누르고 드래그 : 영역 하이라이트 </span>
         </p>
       </div>
 
-      <ul className="sidebar__highlights">
-        {highlights.map((highlight, index) => (
-          <li
-            key={highlight.id}
-            className="sidebar__highlight"
-            onClick={() => {
-              updateHash(highlight);
-            }}>
-            <div>
-              <strong>{highlight.comment.text}</strong>
-              {highlight.content.text ? <blockquote style={{ marginTop: "0.5rem" }}>{`${highlight.content.text.slice(0, 90).trim()}…`}</blockquote> : null}
-              {highlight.content.image ? (
-                <div className="highlight__image" style={{ marginTop: "0.5rem" }}>
-                  <img src={highlight.content.image} alt={"Screenshot"} />
+      <ScrollArea className="h-[calc(100vh-200px)]">
+        <div className="space-y-1">
+          {highlights.map((highlight) => (
+            <Card key={highlight.id} className="p-4 cursor-pointer hover:bg-muted/50 transition-colors border-b rounded-none" onClick={() => updateHash(highlight)}>
+              <div className="space-y-2">
+                <div className="flex justify-end">
+                  <Badge variant="outline" className="text-xs">
+                    Page {highlight.position.pageNumber}
+                  </Badge>
                 </div>
-              ) : null}
-            </div>
-            <div className="highlight__location">Page {highlight.position.pageNumber}</div>
-          </li>
-        ))}
-      </ul>
-      <div style={{ padding: "1rem" }}>
-        <button type="button" onClick={toggleDocument}>
-          Toggle PDF document
-        </button>
-      </div>
-      {highlights.length > 0 ? (
-        <div style={{ padding: "1rem" }}>
-          <button type="button" onClick={resetHighlights}>
-            Reset highlights
-          </button>
+                <p className="font-medium">{highlight.comment.text}</p>
+                {highlight.content.text && (
+                  <blockquote className="text-sm text-muted-foreground mt-2 italic pl-3 border-l-2 border-muted">{`${highlight.content.text.slice(0, 90).trim()}…`}</blockquote>
+                )}
+
+                {highlight.content.image && (
+                  <div className="mt-2 max-w-[300px] overflow-auto border border-dashed border-muted p-1">
+                    <img src={highlight.content.image} alt="Screenshot" className="max-w-full" />
+                  </div>
+                )}
+              </div>
+            </Card>
+          ))}
         </div>
-      ) : null}
+      </ScrollArea>
+
+      <div className="p-4 space-y-2">
+        <Button variant="outline" className="w-full" onClick={toggleDocument}>
+          Toggle PDF document
+        </Button>
+
+        {highlights.length > 0 && (
+          <Button variant="destructive" className="w-full" onClick={resetHighlights}>
+            Reset highlights
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
