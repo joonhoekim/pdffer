@@ -31,7 +31,7 @@ export function PdfLoader({ workerSrc, url, beforeLoad, errorMessage, children, 
   const [error, setError] = useState<Error | null>(null);
 
   // refs
-  const documentRef = useRef<HTMLElement>(null);
+  const documentRef = useRef<HTMLDivElement>(null);
   const mountedRef = useRef(true);
 
   // 에러 처리 함수
@@ -94,6 +94,7 @@ export function PdfLoader({ workerSrc, url, beforeLoad, errorMessage, children, 
         handleError(e as Error);
       }
     }
+    // (pdfDocument 는 변경될 수 있음. 의존성 배열에서 반드시 제외되어야 함)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url, cMapUrl, cMapPacked, workerSrc]);
 
@@ -121,8 +122,22 @@ export function PdfLoader({ workerSrc, url, beforeLoad, errorMessage, children, 
 
   return (
     <>
-      <span ref={documentRef} />
-      {error ? renderError() : !pdfDocument || !children ? beforeLoad : children(pdfDocument)}
+      <div
+        ref={documentRef}
+        className="absolute inset-0"
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: "100%",
+          height: "100%",
+          zIndex: 1,
+        }}
+        data-pdf-container="true"
+      />
+      {error ? renderError() : !pdfDocument || !children ? beforeLoad : <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}>{children(pdfDocument)}</div>}
     </>
   );
 }
