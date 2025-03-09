@@ -56,6 +56,12 @@ export default function Page() {
               <Highlighter /> 7. pdf 필터링 기반 하이라이팅
             </Button>
           </Link>
+
+          <Link href="/fileupload">
+            <Button className="w-full w-max-lg" variant="outline">
+              <FileText /> 8. 파일 업로드 테스트
+            </Button>
+          </Link>
         </div>
       </div>
     </>
