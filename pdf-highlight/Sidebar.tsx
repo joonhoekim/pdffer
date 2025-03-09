@@ -18,7 +18,7 @@ const updateHash = (highlight: IHighlight) => {
 
 export function Sidebar({ highlights, toggleDocument, resetHighlights }: Props) {
   return (
-    <div className="h-full overflow-auto bg-background text-foreground border-r">
+    <div className="h-full overflow-hidden bg-background text-foreground border-r">
       <div className="p-4">
         <p className="text-sm text-muted-foreground">
           <span className="font-medium">Alt 키 누르고 드래그 : 영역 하이라이트 </span>

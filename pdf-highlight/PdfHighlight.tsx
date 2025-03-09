@@ -12,8 +12,8 @@ import { testHighlights as _testHighlights } from "./test-highlights";
 // nextjs default config doew not allow import node_modules files directly
 // import "react-pdf-highlighter/dist/style.css";
 
-import "./style/App.css";
-import "./style/pdf_viewer.css";
+// import "./style/App.css";
+// import "./style/pdf_viewer.css";
 // import "./style/style.css";
 
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
@@ -61,12 +61,12 @@ export default function PdfHighlight() {
   // 상태 관리
   const [url, setUrl] = useState(initialUrl); // 현재 PDF URL
   const [highlights, setHighlights] = useState<Array<IHighlight>>(testHighlights[initialUrl] ? [...testHighlights[initialUrl]] : []); // 하이라이트 목록
-  const [showLeftSidebar, setShowLeftSidebar] = useState(true); // 왼쪽 사이드바 표시 여부
-  const [showRightSidebar, setShowRightSidebar] = useState(true); // 오른쪽 사이드바 표시 여부
-  const [scaleMode, setScaleMode] = useState<'auto' | 'page-width' | 'page-height'>('auto'); // PDF 스케일 모드
+  const [showRightSidebar, setShowLeftSidebar] = useState(true); // 왼쪽 사이드바 표시 여부
+  const [showLeftSidebar, setShowRightSidebar] = useState(true); // 오른쪽 사이드바 표시 여부
+  const [scaleMode, setScaleMode] = useState<"auto" | "page-width" | "page-height">("auto"); // PDF 스케일 모드
   const [currentScale, setCurrentScale] = useState<number>(1); // 현재 배율
   const [spreadMode, setSpreadMode] = useState<0 | 1>(0); // 0: 한 쪽 보기, 1: 두 쪽 보기
-  
+
   // PDF 뷰어 참조
   const viewerRef = useRef<any>(null);
 
@@ -77,7 +77,7 @@ export default function PdfHighlight() {
     // spread mode 유지
     viewerRef.current.spreadMode = spreadMode;
 
-    if (scaleMode === 'auto') {
+    if (scaleMode === "auto") {
       // auto 모드에서는 현재 배율 유지
       viewerRef.current.currentScale = currentScale;
     } else {
@@ -109,7 +109,7 @@ export default function PdfHighlight() {
   // 확대/축소 및 보기 맞춤 메서드
   const zoomIn = useCallback(() => {
     if (viewerRef.current) {
-      setScaleMode('auto');  // 수동 확대/축소 시 auto 모드로 전환
+      setScaleMode("auto"); // 수동 확대/축소 시 auto 모드로 전환
       const newScale = Number((viewerRef.current.currentScale * 1.1).toFixed(2));
       viewerRef.current.currentScale = newScale;
       setCurrentScale(newScale);
@@ -118,7 +118,7 @@ export default function PdfHighlight() {
 
   const zoomOut = useCallback(() => {
     if (viewerRef.current) {
-      setScaleMode('auto');  // 수동 확대/축소 시 auto 모드로 전환
+      setScaleMode("auto"); // 수동 확대/축소 시 auto 모드로 전환
       const newScale = Number((viewerRef.current.currentScale / 1.1).toFixed(2));
       viewerRef.current.currentScale = newScale;
       setCurrentScale(newScale);
@@ -127,9 +127,9 @@ export default function PdfHighlight() {
 
   const setPageFit = useCallback(() => {
     if (viewerRef.current) {
-      setScaleMode('auto');
+      setScaleMode("auto");
       // PDF가 화면에 맞게 자동으로 조정되도록 함
-      viewerRef.current.currentScaleValue = 'auto';
+      viewerRef.current.currentScaleValue = "auto";
       const newScale = viewerRef.current.currentScale;
       if (newScale !== currentScale) {
         setCurrentScale(newScale);
@@ -139,8 +139,8 @@ export default function PdfHighlight() {
 
   const setPageWidthFit = useCallback(() => {
     if (viewerRef.current) {
-      setScaleMode('page-width');
-      viewerRef.current.currentScaleValue = 'page-width';
+      setScaleMode("page-width");
+      viewerRef.current.currentScaleValue = "page-width";
       const newScale = viewerRef.current.currentScale;
       if (newScale !== currentScale) {
         setCurrentScale(newScale);
@@ -150,8 +150,8 @@ export default function PdfHighlight() {
 
   const setPageHeightFit = useCallback(() => {
     if (viewerRef.current) {
-      setScaleMode('page-height');
-      viewerRef.current.currentScaleValue = 'page-height';
+      setScaleMode("page-height");
+      viewerRef.current.currentScaleValue = "page-height";
       const newScale = viewerRef.current.currentScale;
       if (newScale !== currentScale) {
         setCurrentScale(newScale);
@@ -168,56 +168,62 @@ export default function PdfHighlight() {
   }, []);
 
   // 키보드 이벤트 핸들러
-  const handleKeyDown = useCallback((event: KeyboardEvent) => {
-    if (event.code === "Escape") {
-      // TODO
-    }
-    
-    // Ctrl + 키보드 단축키
-    if (event.ctrlKey || event.metaKey) {
-      switch(event.code) {
-        case "Equal":  // Ctrl + Plus
-          event.preventDefault();
-          zoomIn();
-          break;
-        case "Minus":  // Ctrl + Minus
-          event.preventDefault();
-          zoomOut();
-          break;
-        case "Digit0":  // Ctrl + 0
-          event.preventDefault();
-          setPageFit();
-          break;
-        case "Digit1":  // Ctrl + 1
-          event.preventDefault();
-          setPageWidthFit();
-          break;
-        case "Digit2":  // Ctrl + 2
-          event.preventDefault();
-          setPageHeightFit();
-          break;
-        case "Digit3":  // Ctrl + 3
-          event.preventDefault();
-          setTwoPageView();
-          break;
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if (event.code === "Escape") {
+        // TODO
       }
-    }
-  }, [zoomIn, zoomOut, setPageFit, setPageWidthFit, setPageHeightFit, setTwoPageView]);
+
+      // Ctrl + 키보드 단축키
+      if (event.ctrlKey || event.metaKey) {
+        switch (event.code) {
+          case "Equal": // Ctrl + Plus
+            event.preventDefault();
+            zoomIn();
+            break;
+          case "Minus": // Ctrl + Minus
+            event.preventDefault();
+            zoomOut();
+            break;
+          case "Digit0": // Ctrl + 0
+            event.preventDefault();
+            setPageFit();
+            break;
+          case "Digit1": // Ctrl + 1
+            event.preventDefault();
+            setPageWidthFit();
+            break;
+          case "Digit2": // Ctrl + 2
+            event.preventDefault();
+            setPageHeightFit();
+            break;
+          case "Digit3": // Ctrl + 3
+            event.preventDefault();
+            setTwoPageView();
+            break;
+        }
+      }
+    },
+    [zoomIn, zoomOut, setPageFit, setPageWidthFit, setPageHeightFit, setTwoPageView],
+  );
 
   // 키보드 이벤트 리스너 등록
   useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [handleKeyDown]);
 
   // PDF 뷰어 참조 설정
-  const onViewerLoaded = useCallback((viewer: any) => {
-    viewerRef.current = viewer;
-    // 초기 spread mode 설정
-    viewer.spreadMode = spreadMode;
-  }, [spreadMode]);
+  const onViewerLoaded = useCallback(
+    (viewer: any) => {
+      viewerRef.current = viewer;
+      // 초기 spread mode 설정
+      viewer.spreadMode = spreadMode;
+    },
+    [spreadMode],
+  );
 
   // 모든 하이라이트를 초기화하는 함수
   const resetHighlights = () => {
@@ -260,17 +266,17 @@ export default function PdfHighlight() {
     console.log("Saving highlight", highlight);
     const newHighlight = { ...highlight, id: getNextId() };
     setHighlights((prevHighlights) => [newHighlight, ...prevHighlights]);
-    
+
     // 새로 추가된 하이라이트로 스크롤
     document.location.hash = `highlight-${newHighlight.id}`;
-    
+
     // 하이라이트 추가 후 현재 설정 유지
     if (viewerRef.current) {
       // spread mode 유지
       viewerRef.current.spreadMode = spreadMode;
-      
+
       // scale mode 유지
-      if (scaleMode === 'auto') {
+      if (scaleMode === "auto") {
         viewerRef.current.currentScale = currentScale;
       } else {
         viewerRef.current.currentScaleValue = scaleMode;
@@ -302,7 +308,7 @@ export default function PdfHighlight() {
       <div className="border-b p-2 flex items-center justify-between shrink-0 bg-background">
         {/* 왼쪽 툴바 버튼 그룹 */}
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => setShowLeftSidebar(!showLeftSidebar)} className={!showLeftSidebar ? "bg-muted" : ""}>
+          <Button variant="outline" size="icon" onClick={() => setShowLeftSidebar(!showRightSidebar)} className={!showRightSidebar ? "bg-muted" : ""}>
             <PanelLeftClose className="h-4 w-4" />
           </Button>
           <Separator orientation="vertical" className="h-6" />
@@ -325,7 +331,7 @@ export default function PdfHighlight() {
                   if (!isNaN(newScale) && newScale >= 0.25 && newScale <= 5) {
                     if (viewerRef.current) {
                       requestAnimationFrame(() => {
-                        setScaleMode('auto');
+                        setScaleMode("auto");
                         viewerRef.current.currentScale = newScale;
                         setCurrentScale(newScale);
                       });
@@ -334,19 +340,17 @@ export default function PdfHighlight() {
                 }}
                 className="pr-7 text-right"
               />
-              <span className="absolute inset-y-0 right-2 flex items-center pointer-events-none text-muted-foreground text-sm">
-                %
-              </span>
+              <span className="absolute inset-y-0 right-2 flex items-center pointer-events-none text-muted-foreground text-sm">%</span>
             </div>
           </div>
           <Separator orientation="vertical" className="h-6" />
-          <Button variant={scaleMode === 'auto' ? "secondary" : "outline"} size="icon" onClick={setPageFit}>
+          <Button variant={scaleMode === "auto" ? "secondary" : "outline"} size="icon" onClick={setPageFit}>
             <Maximize className="h-4 w-4" />
           </Button>
-          <Button variant={scaleMode === 'page-width' ? "secondary" : "outline"} size="icon" onClick={setPageWidthFit}>
+          <Button variant={scaleMode === "page-width" ? "secondary" : "outline"} size="icon" onClick={setPageWidthFit}>
             <ArrowLeftRight className="h-4 w-4" />
           </Button>
-          <Button variant={scaleMode === 'page-height' ? "secondary" : "outline"} size="icon" onClick={setPageHeightFit}>
+          <Button variant={scaleMode === "page-height" ? "secondary" : "outline"} size="icon" onClick={setPageHeightFit}>
             <ArrowUpDown className="h-4 w-4" />
           </Button>
           <Button variant={spreadMode === 1 ? "secondary" : "outline"} size="icon" onClick={setTwoPageView}>
@@ -363,7 +367,7 @@ export default function PdfHighlight() {
             <Search className="h-4 w-4" />
           </Button>
           <Separator orientation="vertical" className="h-6" />
-          <Button variant="outline" size="icon" onClick={() => setShowRightSidebar(!showRightSidebar)} className={!showRightSidebar ? "bg-muted" : ""}>
+          <Button variant="outline" size="icon" onClick={() => setShowRightSidebar(!showLeftSidebar)} className={!showLeftSidebar ? "bg-muted" : ""}>
             <PanelRightClose className="h-4 w-4" />
           </Button>
         </div>
@@ -371,13 +375,25 @@ export default function PdfHighlight() {
 
       {/* 메인 콘텐츠 영역 - 사이드바와 PDF 뷰어를 포함 */}
       <ResizablePanelGroup direction="horizontal" className="flex-1 relative">
-        {/* 왼쪽 사이드바 - 하이라이트 목록 표시 */}
+        {/* 왼쪽 사이드바 - 파일 선택, 프리뷰 표시 */}
         {showLeftSidebar && (
           <>
-            <ResizablePanel defaultSize={20} minSize={15} maxSize={40}>
+            <ResizablePanel defaultSize={20} minSize={15} maxSize={50}>
               <div className="h-full overflow-auto">
                 <ScrollArea className="h-full">
-                  <Sidebar highlights={highlights} resetHighlights={resetHighlights} toggleDocument={toggleDocument} />
+                  <div className="p-4 space-y-4">
+                    <h3 className="text-lg font-semibold">Document Info</h3>
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">Title: Sample Document</p>
+                      <p className="text-sm text-muted-foreground">Pages: 10</p>
+                      <p className="text-sm text-muted-foreground">Created: 2024-03-21</p>
+                    </div>
+                    <Separator />
+                    <h3 className="text-lg font-semibold">Notes</h3>
+                    <div className="space-y-2">
+                      <p className="text-sm">No notes yet.</p>
+                    </div>
+                  </div>
                 </ScrollArea>
               </div>
             </ResizablePanel>
@@ -386,7 +402,7 @@ export default function PdfHighlight() {
         )}
 
         {/* PDF 뷰어 - 문서 표시 및 하이라이트 기능 */}
-        <ResizablePanel defaultSize={showLeftSidebar && showRightSidebar ? 60 : 100}>
+        <ResizablePanel defaultSize={showRightSidebar && showLeftSidebar ? 60 : 100}>
           <div className="h-full w-full relative overflow-hidden">
             {/* PDF 뷰어 컨테이너 - position: relative로 설정하여 PDF.js 컨테이너의 부모 역할 */}
             <div className="absolute inset-0">
@@ -449,26 +465,14 @@ export default function PdfHighlight() {
           </div>
         </ResizablePanel>
 
-        {/* 오른쪽 사이드바 - 문서 정보와 노트 표시 */}
+        {/* 오른쪽 사이드바 - 필터, 하이라이트 관리 */}
         {showRightSidebar && (
           <>
             <ResizableHandle />
             <ResizablePanel defaultSize={20} minSize={15} maxSize={40}>
               <div className="h-full overflow-auto">
                 <ScrollArea className="h-full">
-                  <div className="p-4 space-y-4">
-                    <h3 className="text-lg font-semibold">Document Info</h3>
-                    <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">Title: Sample Document</p>
-                      <p className="text-sm text-muted-foreground">Pages: 10</p>
-                      <p className="text-sm text-muted-foreground">Created: 2024-03-21</p>
-                    </div>
-                    <Separator />
-                    <h3 className="text-lg font-semibold">Notes</h3>
-                    <div className="space-y-2">
-                      <p className="text-sm">No notes yet.</p>
-                    </div>
-                  </div>
+                  <Sidebar highlights={highlights} resetHighlights={resetHighlights} toggleDocument={toggleDocument} />
                 </ScrollArea>
               </div>
             </ResizablePanel>
