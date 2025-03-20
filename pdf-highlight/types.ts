@@ -1,3 +1,5 @@
+import type { EventBus } from "pdfjs-dist/legacy/web/pdf_viewer.mjs";
+
 export interface LTWH {
   left: number;
   top: number;
@@ -75,4 +77,20 @@ export interface Viewport {
 export interface Page {
   node: HTMLElement;
   number: number;
+}
+
+// PDF Scale Mode type
+export type PDFScaleMode = "auto" | "page-width" | "page-height";
+
+// PDF Spread Mode type
+export type PDFSpreadMode = 0 | 1;
+
+// Extended PDF Viewer Options
+export interface ExtendedPDFViewerOptions {
+  spreadMode?: PDFSpreadMode;
+  scaleMode?: PDFScaleMode;
+  defaultScale?: number;
+  // Optional properties to satisfy PDFViewer
+  container?: HTMLDivElement;
+  eventBus?: EventBus;
 }

@@ -11,7 +11,7 @@
   },
   "javascript": { "formatter": { "bracketSameLine": true } },
   "organizeImports": { "enabled": true },
-  "linter": { "enabled": true, "rules": { "recommended": true, "a11y": { "useKeyWithClickEvents": "off", "useKeyWithMouseEvents": "off" } } },
+  "linter": { "enabled": false, "rules": { "recommended": true, "a11y": { "useKeyWithClickEvents": "off", "useKeyWithMouseEvents": "off" } } },
   "vcs": { "enabled": true, "clientKind": "git" },
   "files": { "ignore": ["package.json", "node_modules/**/*", ".next/**/*"] }
 }

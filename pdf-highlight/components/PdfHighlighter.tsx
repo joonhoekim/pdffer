@@ -2,7 +2,6 @@
 
 import type { PDFDocumentProxy } from "pdfjs-dist";
 import type { EventBus, PDFViewer } from "pdfjs-dist/legacy/web/pdf_viewer.mjs";
-import type { PDFViewerOptions } from "pdfjs-dist/types/web/pdf_viewer";
 import React, { type PointerEventHandler, PureComponent, type RefObject } from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { debounce } from "ts-debounce";
@@ -12,17 +11,10 @@ import { getBoundingRect } from "../lib/get-bounding-rect";
 import { getClientRects } from "../lib/get-client-rects";
 import { findOrCreateContainerLayer, getPageFromElement, getPagesFromRange, getWindow, isHTMLElement } from "../lib/pdfjs-dom";
 import styles from "../style/PdfHighlighter.module.css";
-import type { IHighlight, LTWH, LTWHP, Position, Scaled, ScaledPosition } from "../types";
+import type { IHighlight, LTWH, LTWHP, Position, Scaled, ScaledPosition, ExtendedPDFViewerOptions } from "../types";
 import { HighlightLayer } from "./HighlightLayer";
 import { MouseSelection } from "./MouseSelection";
 import { TipContainer } from "./TipContainer";
-
-// PDF 뷰어 옵션 확장
-interface ExtendedPDFViewerOptions extends PDFViewerOptions {
-  spreadMode?: number;
-  scaleMode?: 'auto' | 'page-width' | 'page-height';
-  defaultScale?: number;
-}
 
 // (인터섹션 타입) 제네릭으로 받는 T_HT라는 타입에 position을 추가하라는 의미
 // T_HT는 IHighlight를 확장한 타입으로, 사용자가 정의한 하이라이트 타입
@@ -79,7 +71,7 @@ interface Props<T_HT> {
   onScrollChange: () => void;
   scrollRef: (scrollTo: (highlight: T_HT) => void) => void;
   pdfDocument: PDFDocumentProxy;
-  pdfScaleValue: 'auto' | 'page-width' | 'page-height';
+  pdfScaleValue: "auto" | "page-width" | "page-height";
   onSelectionFinished: (position: ScaledPosition, content: { text?: string; image?: string }, hideTipAndSelection: () => void, transformSelection: () => void) => React.ReactElement | null;
   enableAreaSelection: (event: MouseEvent) => boolean;
   pdfViewerOptions?: ExtendedPDFViewerOptions;
@@ -230,9 +222,9 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<Props
     // 초기 설정 적용
     if (pdfViewerOptions) {
       const { spreadMode, defaultScale, scaleMode } = pdfViewerOptions;
-      
+
       // PDF.js의 내부 이벤트를 활용하여 설정 적용
-      eventBus.on('pagesloaded', () => {
+      eventBus.on("pagesloaded", () => {
         // spreadMode 설정
         if (spreadMode !== undefined) {
           this.viewer.spreadMode = spreadMode;
@@ -245,7 +237,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<Props
           } else if (scaleMode !== undefined) {
             this.viewer.currentScaleValue = scaleMode;
           }
-          
+
           // 강제로 페이지 크기 재계산 트리거
           this.viewer.update();
         });
